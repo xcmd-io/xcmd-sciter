@@ -18,7 +18,7 @@ jobs:
         command: rustup component add rustfmt
     - run:
         name: Check formatting
-        command: cargo fmt -- --write-mode=diff
+        command: cargo fmt --all -- --check
     - run:
         name: Build all targets
         command: cargo build --all --all-targets
