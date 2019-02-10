@@ -129,9 +129,13 @@ impl Pane {
 	pub fn toggle_select(&mut self) {
 		if let Some(mut active_item) = self.get_item(self.active_index) {
 			if let Some(_selected) = &active_item.get_attribute("selected") {
-				active_item.remove_attribute("selected").expect("remove selected");
+				active_item
+					.remove_attribute("selected")
+					.expect("remove selected");
 			} else {
-				active_item.set_attribute("selected", "true").expect("set selected");
+				active_item
+					.set_attribute("selected", "true")
+					.expect("set selected");
 			}
 		}
 	}
@@ -143,7 +147,9 @@ impl Pane {
 			}
 
 			self.active_index = active_index;
-			new_item.set_attribute("active", "true").expect("set active");
+			new_item
+				.set_attribute("active", "true")
+				.expect("set active");
 			let scapi = sciter::SciterAPI();
 			(scapi.SciterScrollToView)(new_item.as_ptr(), 0);
 		}
