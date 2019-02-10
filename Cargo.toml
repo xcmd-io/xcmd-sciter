@@ -1,0 +1,27 @@
+[package]
+name = "xcmd"
+version = "0.1.0"
+authors = ["xcmd.io <developer@xcmd.io>"]
+autobins = false
+
+[dependencies]
+sciter-rs = "*"
+separator = "*"
+semver = { version = "*", features = ["serde"] }
+xcmd_core = { path = "src/xcmd_core" }
+reqwest = "*"
+url = "*"
+serde_derive = "*"
+serde = "*"
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "*", features = ["objbase", "combaseapi", "unknwnbase", "winnt", "coml2api", "minwinbase", "impl-default", "shtypes", "guiddef"] }
+
+[target.'cfg(windows)'.build-dependencies]
+windres = "*"
+ar = "*"
+embed-resource = "*"
+
+[[bin]]
+name = "xcmd"
+path = "src/main.rs"

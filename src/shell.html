@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html tabindex="0" window-icon="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAACHAAAAhwB7B1MXgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAFOSURBVFiF7Ze/S0JhFIafYxcFFREKQTAqEP+BcGhouNBYY7ko0R9Qe+Ug1OxQe1MN1Rrm1B1bchMH14bAloqSmz/4Gsq43ayQvPcu993Od87H+/B973IEgO3aIqIqQBQnpNQpoec8Jb1nb8kw86mwRjYVGYv3ZfPxVwgNUVUgbD3MpiJU1tMjm92/9Hgw+wAEJ4SZeBDZrb03RXJ0Yx1WzzY4X+sP7gTs5v/RnnFHplwnU66zdNT8PqBUgfTcCSVDswK4K5Ecr9HjAYT217yDEFAy8t4ADCC6sY77X2CVUgVvAfAihDaNNQOJiEZ6MgTAbDzkPkBRT1LUkyPdEXZu1DghRpXnGfABvoTwYHmazYWEo4aH1y22Lm4/a89fwAfwAXwAH8AH8BxAA9p8bEeNlkm1+eSoYaNlWsv20OXUJbUJyIoAzq/nP5izP3/1BprnWyDp0ceHAAAAAElFTkSuQmCC"><head>
+	<title>Cross Commander</title>
+	<style>
+html {
+	font-family: 'Segoe UI', sans-serif;
+	font-size: 10pt;
+	width: 100%;
+	background: #252525;
+	color: #b4b4b4;
+	prototype: AppWidget;
+}
+
+body {
+	margin: 0;
+	flow: horizontal;
+}
+
+pane {
+	display: block;
+	width: *;
+	height: *;
+	flow: vertical;
+	padding: 1dip;
+}
+
+table {
+	width: *;
+	height: *;
+	background: #1e1e1e;
+	border-collapse: collapse;
+	margin: 1dip 0;
+}
+
+thead {
+	background: #2d2d2d;
+	color: #949494;
+}
+
+tbody {
+	overflow: auto;
+}
+
+th {
+	font-weight: normal;
+	text-align: left;
+	padding: 1dip;
+	border: .5dip solid #3c3c3c;
+}
+
+input {
+	font-size: 100%;
+	width: *;
+	background: #3c3c3c;
+	color: #a6a6a6;
+	padding: 1dip;
+	margin: 1dip 0;
+	border: .5dip solid #3c3c3c;
+}
+
+input:focus {
+	border-color: #175b89;
+	color: #fafafa;
+}
+
+td[behavior=file-icon] {
+	padding-left: 17dip;
+	behavior: file-icon;
+	foreground-repeat: no-repeat;
+	foreground-position: 0 50%;
+}
+
+td[behavior=shell-icon] {
+	padding-left: 17dip;
+	behavior: shell-icon;
+	foreground-repeat: no-repeat;
+	foreground-position: 0 50%;
+}
+
+tbody tr[selected] {
+	color: #fff;
+	background: #37373d;
+}
+
+tbody tr[active] {
+	color: initial;
+	background: #2a2d2e;
+}
+
+tbody tr[selected][active] {
+	color: #fff;
+	background: #2a2d2e;
+}
+
+pane.pane-active tbody tr[selected] {
+	color: #fff;
+	background: #094771;
+}
+
+pane.pane-active tbody tr[active] {
+	color: initial;
+	background: #062f4a;
+}
+
+pane.pane-active tbody tr[selected][active] {
+	color: #fff;
+	background: #062f4a;
+}
+
+
+td {
+	padding: 0 1dip;
+}
+
+tabs {
+	display: block;
+	border-bottom: 2dip solid #3c3c3c;
+	margin-top: 1.5dip;
+}
+
+tab {
+	display: inline-block;
+	color: #fff;
+	background: #3c3c3c;
+	padding: 1dip 2dip;
+	min-width: 100dip;
+}
+
+pane.pane-active tabs {
+	border-bottom-color: #007acc;
+}
+
+pane.pane-active tab {
+	background-color: #007acc;
+}
+
+status {
+	display: block;
+	padding: 1dip;
+	color: #fff;
+	background-color: #3c3c3c;
+}
+
+pane.pane-active status {
+	background-color: #007acc;
+}
+
+.align-right {
+	text-align: right;
+}
+	</style>
+</head><body>
+	<pane id="left-pane">
+		<tabs>
+			<tab>node_modules</tab>
+		</tabs>
+		<input value="C:\work\Web\AccountController"/>
+		<table>
+			<thead/>
+			<tbody/>
+		</table>
+		<status>7 files.</status>
+	</pane>
+	<pane id="right-pane">
+		<tabs>
+			<tab>dist</tab>
+		</tabs>
+		<input value="C:\work\cloud-commander\design"/>
+		<table>
+			<thead/>
+			<tbody/>
+		</table>
+		<status>7 files.</status>
+	</pane>
+	<script type="application/tiscript">
+		class AppWidget : Element {
+			function onKey(event) {
+				return view.on_key(event.type, event.keyCode, event.altKey, event.ctrlKey, event.shiftKey);
+			}
+		}
+	</script>
+</body></html>
