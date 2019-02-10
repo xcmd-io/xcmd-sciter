@@ -1,0 +1,29 @@
+version: 2
+jobs:
+  build:
+    docker:
+    - image: circleci/rust:latest
+    steps:
+    - checkout
+    - restore_cache:
+        key: project-cache
+    - run:
+        name: Version information
+        command: |
+          rustc --version
+          cargo --version
+          rustup --version
+    - run:
+        name: Check formatting
+        command: cargo fmt -- --write-mode=diff
+    - run:
+        name: Build all targets
+        command: cargo build --all --all-targets
+    - save_cache:
+        key: project-cache
+        paths:
+        - /usr/local/cargo/registry
+        - target
+    - run:
+        name: Run all tests
+        command: cargo test --all
