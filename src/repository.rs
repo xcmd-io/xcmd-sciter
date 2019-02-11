@@ -5,28 +5,32 @@ use std::path::Path;
 use url::Url;
 
 #[derive(Deserialize)]
-pub struct VersionFileData {
-	pub filename: String,
-	pub checksum: String,
+pub struct Asset {
+	pub name: String,
+	#[serde(with = "url_serde")]
+	pub url: Url,
 }
 
 #[derive(Deserialize)]
-pub struct VersionData {
-	pub version: Version,
-	pub exe: String,
-	pub files: Vec<VersionFileData>,
+pub struct Release {
+	pub tag_name: Version,
+	pub assets: Vec<Asset>,
 }
 
-pub fn get_latest_version_data(url: &Url) -> VersionData {
+pub fn get_latest_release(url: &Url) -> Release {
 	let mut response = reqwest::get(url.to_owned()).expect("download response");
-	let json: VersionData = response.json().expect("JSON");
+	let json: Release = response.json().expect("JSON");
 	json
 }
 
-pub fn download(target_dir: &Path, base: &Url, filename: &str, _checksum: &str) {
-	let url = base.join(filename).expect("download url");
-	let mut response = reqwest::get(url).expect("download response");
+pub fn download(target_dir: &Path, asset: &Asset) {
+	let client = reqwest::Client::new();
+	let mut response = client
+		.get(&asset.url.to_string())
+		.header("Accept", "application/octet-stream")
+		.send()
+		.expect("download asset");
 	assert!(response.status().is_success(), "download failed");
-	let mut target_file = File::create(target_dir.join(filename)).expect("target file");
+	let mut target_file = File::create(target_dir.join(&asset.name)).expect("target file");
 	io::copy(&mut response, &mut target_file).expect("download file");
 }

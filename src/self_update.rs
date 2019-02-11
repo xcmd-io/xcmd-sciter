@@ -13,14 +13,14 @@ use url::Url;
 use window_event_handler::WindowState;
 
 #[cfg(windows)]
-pub fn get_link_name(filename: &str) -> String {
+pub fn win_append_extension(filename: &str, extension: &str) -> String {
 	let mut link_name = filename.to_owned();
-	link_name.push_str(".lnk");
+	link_name.push_str(extension);
 	link_name
 }
 
 #[cfg(unix)]
-pub fn get_link_name(filename: &str) -> String {
+pub fn win_append_extension(filename: &str, _extension: &str) -> String {
 	filename.to_owned()
 }
 
@@ -65,17 +65,18 @@ pub fn update_self(_state: &mut WindowState, root: &Element) {
 	println!("current_version={:?}", &current_version);
 	let launcher_dir = current_dir.parent().expect("launcher dir");
 	println!("launcher_dir={:?}", &launcher_dir);
-	let launcher_exe = launcher_dir.join(get_link_name(pkg_name));
+	let launcher_exe = launcher_dir.join(win_append_extension(pkg_name, ".lnk"));
 	println!("launcher_exe={:?}", &launcher_exe);
 	update_link(&launcher_exe, &current_exe);
 	println!("link updated");
 	if current_version == pkg_version && read_link(&launcher_exe, hwnd) == current_exe {
-		let base = Url::parse("http://localhost:3000/download/latest/").expect("base url");
-		let latest_data_url = base.join("package.json").expect("package url");
-		println!("latest_data_url={:?}", &latest_data_url);
-		let latest_data = repository::get_latest_version_data(&latest_data_url);
-		if latest_data.version > pkg_version {
-			let latest_dir = launcher_dir.join(latest_data.version.to_string());
+		let latest_release_url =
+			Url::parse("https://api.github.com/repos/xcmd-io/xcmd/releases/latest")
+				.expect("latest release url");
+		println!("latest_release_url={:?}", &latest_release_url);
+		let latest_release = repository::get_latest_release(&latest_release_url);
+		if latest_release.tag_name > pkg_version {
+			let latest_dir = launcher_dir.join(latest_release.tag_name.to_string());
 			println!("latest_dir={:?}", &latest_dir);
 			fs::create_dir(&latest_dir)
 				.or_else(|e| {
@@ -86,10 +87,10 @@ pub fn update_self(_state: &mut WindowState, root: &Element) {
 					}
 				})
 				.expect("create latest dir");
-			for file in latest_data.files {
-				repository::download(&latest_dir, &base, &file.filename, &file.checksum);
+			for asset in latest_release.assets {
+				repository::download(&latest_dir, &asset);
 			}
-			let latest_exe = latest_dir.join(latest_data.exe);
+			let latest_exe = latest_dir.join(win_append_extension(pkg_name, ".exe"));
 			update_link(&launcher_exe, &latest_exe);
 			// start(&launcher_exe);
 			// exit(state);

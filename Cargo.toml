@@ -13,6 +13,7 @@ reqwest = "*"
 url = "*"
 serde_derive = "*"
 serde = "*"
+url_serde = "*"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "*", features = ["objbase", "combaseapi", "unknwnbase", "winnt", "coml2api", "minwinbase", "impl-default", "shtypes", "guiddef"] }
