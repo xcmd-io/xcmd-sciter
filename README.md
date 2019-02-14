@@ -1,6 +1,10 @@
 # Cross Commander (xcmd)
 
+[![CircleCI](https://circleci.com/gh/xcmd-io/xcmd.svg?style=svg)](https://circleci.com/gh/xcmd-io/xcmd)
+
 Cross Commander is classic dual-pane file manager that allows you to work with files efficiently.
+
+![Screenshot](docs/screenshot.png)
 
 ## Building
 
