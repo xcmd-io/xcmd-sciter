@@ -116,14 +116,63 @@ impl Pane {
 
 	pub fn move_up(&mut self) {
 		if self.active_index != 0 {
-			let active_index = &self.active_index - 1;
+			let active_index = self.active_index - 1;
 			self.set_active_item(active_index);
 		}
 	}
 
 	pub fn move_down(&mut self) {
-		let active_index = &self.active_index + 1;
+		let active_index = self.active_index + 1;
 		self.set_active_item(active_index);
+	}
+
+	pub fn page_up(&mut self) {
+		if self.active_index != 0 {
+			if let Some(active_item) = self.get_item(self.active_index) {
+				let height = active_item
+					.call_method("box", &[sciter::Value::symbol("height")])
+					.expect("row height")
+					.to_int()
+					.expect("int");
+				let tbody = active_item.parent().expect("tbody");
+				let tbody_height = tbody
+					.call_method("box", &[sciter::Value::symbol("height")])
+					.expect("tbody height")
+					.to_int()
+					.expect("int");
+				let items_per_page = (tbody_height / height) as u32;
+				let active_index = if self.active_index < items_per_page {
+					0
+				} else {
+					self.active_index - items_per_page
+				};
+				self.set_active_item(active_index);
+			}
+		}
+	}
+
+	pub fn page_down(&mut self) {
+		if let Some(active_item) = self.get_item(self.active_index) {
+			let height = active_item
+				.call_method("box", &[sciter::Value::symbol("height")])
+				.expect("row height")
+				.to_int()
+				.expect("int");
+			let tbody = active_item.parent().expect("tbody");
+			let tbody_height = tbody
+				.call_method("box", &[sciter::Value::symbol("height")])
+				.expect("tbody height")
+				.to_int()
+				.expect("int");
+			let items_per_page = (tbody_height / height) as u32;
+			let items_count = tbody.children_count() as u32;
+			let active_index = if self.active_index + items_per_page > items_count {
+				items_count - 1
+			} else {
+				self.active_index + items_per_page
+			};
+			self.set_active_item(active_index);
+		}
 	}
 
 	pub fn toggle_select(&mut self) {

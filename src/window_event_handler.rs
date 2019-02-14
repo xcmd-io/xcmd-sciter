@@ -94,6 +94,14 @@ impl WindowEventHandler {
 			mk_callback(|state: &mut WindowState, _root: &Element| move_down(state)),
 		);
 		self.commands.insert(
+			"page_up".to_owned(),
+			mk_callback(|state: &mut WindowState, _root: &Element| page_up(state)),
+		);
+		self.commands.insert(
+			"page_down".to_owned(),
+			mk_callback(|state: &mut WindowState, _root: &Element| page_down(state)),
+		);
+		self.commands.insert(
 			"select_up".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| select_up(state)),
 		);
@@ -130,6 +138,8 @@ impl WindowEventHandler {
 		self.key_handlers.insert(ALT | 115, "exit".to_owned()); // alt+f4
 		self.key_handlers
 			.insert(CTRL | 85, "update_self".to_owned()); // ctrl+u
+		self.key_handlers.insert(33, "page_up".to_owned()); // pgup
+		self.key_handlers.insert(34, "page_down".to_owned()); // pgdn
 	}
 
 	fn on_key(
@@ -232,6 +242,18 @@ fn move_up(state: &mut WindowState) {
 fn move_down(state: &mut WindowState) {
 	if let Some(pane) = state.get_active_pane() {
 		pane.move_down();
+	}
+}
+
+fn page_up(state: &mut WindowState) {
+	if let Some(pane) = state.get_active_pane() {
+		pane.page_up();
+	}
+}
+
+fn page_down(state: &mut WindowState) {
+	if let Some(pane) = state.get_active_pane() {
+		pane.page_down();
 	}
 }
 
