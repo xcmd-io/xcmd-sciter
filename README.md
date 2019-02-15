@@ -6,6 +6,8 @@ Cross Commander is classic dual-pane file manager that allows you to work with f
 
 ![Screenshot](docs/screenshot.png)
 
+For design documents, see [wiki](https://github.com/xcmd-io/xcmd/wiki).
+
 ## Building
 
 ~~~
