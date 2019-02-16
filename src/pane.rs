@@ -8,8 +8,9 @@ use xcmd_core::api::{Error, File, System, Value};
 
 pub struct Pane {
 	active: bool,
-	active_index: u32,
-	system: Box<System>,
+	pub active_index: u32,
+	pub system: Box<System>,
+	pub files: Vec<File>,
 	columns: Vec<Column>,
 	field_names: Vec<String>,
 	parent: String,
@@ -35,6 +36,7 @@ impl Pane {
 			active,
 			active_index: 0,
 			system,
+			files: Vec::new(),
 			columns: Vec::new(),
 			field_names,
 			parent: parent_path,
@@ -81,6 +83,7 @@ impl Pane {
 						self.set_active_item(index as u32);
 					}
 				}
+				self.files = files;
 			}
 			Err(e) => println!("Error: {}", e),
 		}
@@ -110,7 +113,7 @@ impl Pane {
 		}
 	}
 
-	fn get_item(&self, index: u32) -> Option<Element> {
+	pub fn get_item(&self, index: u32) -> Option<Element> {
 		self.tbody.child(index as usize)
 	}
 
@@ -233,7 +236,7 @@ impl Pane {
 	}
 }
 
-fn get_path(file: &File) -> String {
+pub fn get_path(file: &File) -> String {
 	if let Some(path_index) = file.get_field_index("path") {
 		if let Value::Path { path, .. } = &file.fields[path_index] {
 			path.to_owned()

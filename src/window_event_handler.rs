@@ -4,6 +4,7 @@ use sciter::dom::event::{EventReason, BEHAVIOR_EVENTS, EVENT_GROUPS, PHASE_MASK}
 use sciter::dom::{ELEMENT_STATE_BITS, HELEMENT};
 use sciter::{Element, EventHandler};
 use std::collections::HashMap;
+use std::process::Command;
 use xcmd_core::api::System;
 use xcmd_core::local::LocalSystem;
 use xcmd_core::sftp::SftpSystem;
@@ -125,6 +126,14 @@ impl WindowEventHandler {
 			"update_self".to_owned(),
 			mk_callback(|state: &mut WindowState, root: &Element| update_self(state, root)),
 		);
+		self.commands.insert(
+			"view_file".to_owned(),
+			mk_callback(|state: &mut WindowState, _root: &Element| view_file(state)),
+		);
+		self.commands.insert(
+			"edit_file".to_owned(),
+			mk_callback(|state: &mut WindowState, _root: &Element| edit_file(state)),
+		);
 
 		self.key_handlers.insert(9, "switch_pane".to_owned()); // tab
 		self.key_handlers.insert(38, "move_up".to_owned()); // up
@@ -140,6 +149,8 @@ impl WindowEventHandler {
 			.insert(CTRL | 85, "update_self".to_owned()); // ctrl+u
 		self.key_handlers.insert(33, "page_up".to_owned()); // pgup
 		self.key_handlers.insert(34, "page_down".to_owned()); // pgdn
+		self.key_handlers.insert(114, "view_file".to_owned()); // f3
+		self.key_handlers.insert(115, "edit_file".to_owned()); // f4
 	}
 
 	fn on_key(
@@ -280,6 +291,28 @@ fn select_down(state: &mut WindowState) {
 	if let Some(pane) = state.get_active_pane() {
 		pane.toggle_select();
 		pane.move_down();
+	}
+}
+
+fn view_file(state: &mut WindowState) {
+	if let Some(pane) = state.get_active_pane() {
+		if let Some(file) = pane.files.get(pane.active_index as usize) {
+			Command::new("lister")
+				.arg(super::pane::get_path(file))
+				.output()
+				.expect("lister");
+		}
+	}
+}
+
+fn edit_file(state: &mut WindowState) {
+	if let Some(pane) = state.get_active_pane() {
+		if let Some(file) = pane.files.get(pane.active_index as usize) {
+			Command::new("notepad")
+				.arg(super::pane::get_path(file))
+				.output()
+				.expect("lister");
+		}
 	}
 }
 
