@@ -6,8 +6,8 @@ html {
 	font-family: 'Segoe UI', sans-serif;
 	font-size: 10pt;
 	width: 100%;
-	background: #252525;
-	color: #b4b4b4;
+	background: var('window.background');
+	color: var('window.foreground');
 	prototype: AppWidget;
 }
 
@@ -27,14 +27,14 @@ pane {
 table {
 	width: *;
 	height: *;
-	background: #1e1e1e;
+	background: var('list.background');
 	border-collapse: collapse;
 	margin: 1dip 0;
 }
 
 thead {
-	background: #2d2d2d;
-	color: #949494;
+	background: var('list.headerBackground');
+	color: var('list.headerForeground');
 }
 
 tbody {
@@ -45,22 +45,23 @@ th {
 	font-weight: normal;
 	text-align: left;
 	padding: 1dip;
-	border: .5dip solid #3c3c3c;
+	border: .5dip solid var('list.headerBorder');
 }
 
 input {
 	font-size: 100%;
 	width: *;
-	background: #3c3c3c;
-	color: #a6a6a6;
+	color: var('input.foreground');
+	background: var('input.background');
 	padding: 1dip;
 	margin: 1dip 0;
-	border: .5dip solid #3c3c3c;
+	border: .5dip solid var('input.border');
 }
 
 input:focus {
-	border-color: #175b89;
-	color: #fafafa;
+	border-color: var('input.focusBorder');
+	color: var('input.focusForeground');
+	background: var('input.focusBackground');
 }
 
 td[behavior=file-icon] {
@@ -78,33 +79,33 @@ td[behavior=shell-icon] {
 }
 
 tbody tr[selected] {
-	color: #fff;
-	background: #37373d;
+	color: var('inactiveList.selectedForeground');
+	background: var('inactiveList.selectedBackground');
 }
 
 tbody tr[active] {
-	color: initial;
-	background: #2a2d2e;
+	color: var('inactiveList.activeForeground');
+	background: var('inactiveList.activeBackground');
 }
 
 tbody tr[selected][active] {
-	color: #fff;
-	background: #2a2d2e;
+	color: var('inactiveList.selectedActiveForeground');
+	background: var('inactiveList.selectedActiveBackground');
 }
 
 pane.pane-active tbody tr[selected] {
-	color: #fff;
-	background: #094771;
+	color: var('list.selectedForeground');
+	background: var('list.selectedBackground');
 }
 
 pane.pane-active tbody tr[active] {
-	color: initial;
-	background: #062f4a;
+	color: var('list.activeForeground');
+	background: var('list.activeBackground');
 }
 
 pane.pane-active tbody tr[selected][active] {
-	color: #fff;
-	background: #062f4a;
+	color: var('list.selectedActiveForeground');
+	background: var('list.selectedActiveBackground');
 }
 
 
@@ -114,35 +115,37 @@ td {
 
 tabs {
 	display: block;
-	border-bottom: 2dip solid #3c3c3c;
+	border-bottom: 2dip solid var('inactiveTab.background');
 	margin-top: 1.5dip;
 }
 
 tab {
 	display: inline-block;
-	color: #fff;
-	background: #3c3c3c;
+	color: var('inactiveTab.foreground');
+	background: var('inactiveTab.background');
 	padding: 1dip 2dip;
 	min-width: 100dip;
 }
 
 pane.pane-active tabs {
-	border-bottom-color: #007acc;
+	border-bottom-color: var('tab.background');
 }
 
 pane.pane-active tab {
-	background-color: #007acc;
+	color: var('tab.foreground');
+	background-color: var('tab.background');
 }
 
 status {
 	display: block;
 	padding: 1dip;
-	color: #fff;
-	background-color: #3c3c3c;
+	color: var('inactiveTab.foreground');
+	background-color: var('inactiveTab.background');
 }
 
 pane.pane-active status {
-	background-color: #007acc;
+	color: var('tab.foreground');
+	background-color: var('tab.background');
 }
 
 .align-right {

@@ -11,9 +11,11 @@ extern crate xcmd_core;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
+extern crate serde_json;
 #[cfg(windows)]
 #[macro_use]
 extern crate winapi;
+extern crate regex;
 
 #[cfg(windows)]
 #[macro_use]
@@ -29,9 +31,11 @@ mod shortcut;
 mod size_renderer;
 mod text_renderer;
 mod window_event_handler;
+mod template;
 
 use sciter::{RuntimeOptions, Window};
 use window_event_handler::WindowEventHandler;
+use template::Template;
 
 fn main() {
 	sciter::set_options(RuntimeOptions::ScriptFeatures(
@@ -41,8 +45,10 @@ fn main() {
 	))
 	.unwrap();
 	sciter::set_options(RuntimeOptions::DebugMode(true)).unwrap();
+	let template = Template::new(include_str!("shell.html"));
+	let rendered_template = template.render(&Template::parse_json(include_str!("../config/dark.color-theme.json")));
 	let mut html_with_bom = vec![0xef, 0xbb, 0xbf];
-	html_with_bom.extend_from_slice(include_bytes!("shell.html"));
+	html_with_bom.extend_from_slice(rendered_template.as_bytes());
 	let mut window = Window::new();
 	let handler = WindowEventHandler::new();
 	window.event_handler(handler);

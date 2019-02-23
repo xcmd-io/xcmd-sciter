@@ -13,7 +13,9 @@ reqwest = "*"
 url = "*"
 serde_derive = "*"
 serde = "*"
+serde_json = "*"
 url_serde = "*"
+regex = "*"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "*", features = ["objbase", "combaseapi", "unknwnbase", "winnt", "coml2api", "minwinbase", "impl-default", "shtypes", "guiddef"] }
