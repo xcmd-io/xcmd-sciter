@@ -95,6 +95,14 @@ impl WindowEventHandler {
 			mk_callback(|state: &mut WindowState, _root: &Element| move_down(state)),
 		);
 		self.commands.insert(
+			"move_home".to_owned(),
+			mk_callback(|state: &mut WindowState, _root: &Element| move_home(state)),
+		);
+		self.commands.insert(
+			"move_end".to_owned(),
+			mk_callback(|state: &mut WindowState, _root: &Element| move_end(state)),
+		);
+		self.commands.insert(
 			"page_up".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| page_up(state)),
 		);
@@ -138,6 +146,8 @@ impl WindowEventHandler {
 		self.bind_key(Key::Tab, "switch_pane");
 		self.bind_key(Key::UpArrow, "move_up");
 		self.bind_key(Key::DownArrow, "move_down");
+		self.bind_key(Key::Home, "move_home");
+		self.bind_key(Key::End, "move_end");
 		self.bind_key(Key::modify_key(SHIFT, Key::UpArrow), "select_up");
 		self.bind_key(Key::modify_key(SHIFT, Key::DownArrow), "select_down");
 		self.bind_key(Key::Space, "toggle_select");
@@ -266,6 +276,18 @@ fn page_up(state: &mut WindowState) {
 fn page_down(state: &mut WindowState) {
 	if let Some(pane) = state.get_active_pane() {
 		pane.page_down();
+	}
+}
+
+fn move_home(state: &mut WindowState) {
+	if let Some(pane) = state.get_active_pane() {
+		pane.move_home();
+	}
+}
+
+fn move_end(state: &mut WindowState) {
+	if let Some(pane) = state.get_active_pane() {
+		pane.move_end();
 	}
 }
 

@@ -129,6 +129,21 @@ impl Pane {
 		self.set_active_item(active_index);
 	}
 
+	pub fn move_home(&mut self) {
+		if self.active_index != 0 {
+			self.set_active_item(0);
+		}
+	}
+
+	pub fn move_end(&mut self) {
+		if !self.files.is_empty() {
+			let active_index = self.files.len() as u32 - 1;
+			if self.active_index != active_index {
+				self.set_active_item(active_index);
+			}
+		}
+	}
+
 	pub fn page_up(&mut self) {
 		if self.active_index != 0 {
 			if let Some(active_item) = self.get_item(self.active_index) {
