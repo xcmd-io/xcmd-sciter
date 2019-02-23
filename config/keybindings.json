@@ -1,0 +1,54 @@
+
+[{
+	"key": "tab",
+	"command": "pane.switchPane",
+	"when": "paneFocus"
+},{
+	"key": "up",
+	"command": "pane.moveUp",
+	"when": "paneFocus"
+},{
+	"key": "down",
+	"command": "pane.moveDown",
+	"when": "paneFocus"
+},{
+	"key": "shift+up",
+	"command": "pane.selectUp",
+	"when": "paneFocus"
+},{
+	"key": "shift+down",
+	"command": "pane.selectDown",
+	"when": "paneFocus"
+},{
+	"key": "space",
+	"command": "pane.toggleSelect",
+	"when": "paneFocus"
+},{
+	"key": "enter",
+	"command": "pane.enterItem",
+	"when": "paneFocus"
+},{
+	"key": "alt+f4",
+	"command": "pane.exit",
+	"when": "paneFocus"
+},{
+	"key": "ctrl+u",
+	"command": "pane.updateSelf",
+	"when": "paneFocus"
+},{
+	"key": "pageup",
+	"command": "pane.pageUp",
+	"when": "paneFocus"
+},{
+	"key": "pagedown",
+	"command": "pane.pageDown",
+	"when": "paneFocus"
+},{
+	"key": "f3",
+	"command": "pane.viewFile",
+	"when": "paneFocus"
+},{
+	"key": "f4",
+	"command": "pane.editFile",
+	"when": "paneFocus"
+}]

@@ -5,7 +5,7 @@ use sciter::dom::{ELEMENT_STATE_BITS, HELEMENT};
 use sciter::{Element, EventHandler};
 use std::collections::HashMap;
 use std::process::Command;
-use xcmd_core::api::System;
+use xcmd_core::api::{System, Key};
 use xcmd_core::local::LocalSystem;
 use xcmd_core::sftp::SftpSystem;
 
@@ -135,22 +135,23 @@ impl WindowEventHandler {
 			mk_callback(|state: &mut WindowState, _root: &Element| edit_file(state)),
 		);
 
-		self.key_handlers.insert(9, "switch_pane".to_owned()); // tab
-		self.key_handlers.insert(38, "move_up".to_owned()); // up
-		self.key_handlers.insert(39, "update_self".to_owned()); // up
-		self.key_handlers.insert(40, "move_down".to_owned()); // down
-		self.key_handlers.insert(SHIFT | 38, "select_up".to_owned()); // shift+up
-		self.key_handlers
-			.insert(SHIFT | 40, "select_down".to_owned()); // shift+down
-		self.key_handlers.insert(32, "toggle_select".to_owned()); // space
-		self.key_handlers.insert(13, "enter_item".to_owned()); // enter
-		self.key_handlers.insert(ALT | 115, "exit".to_owned()); // alt+f4
-		self.key_handlers
-			.insert(CTRL | 85, "update_self".to_owned()); // ctrl+u
-		self.key_handlers.insert(33, "page_up".to_owned()); // pgup
-		self.key_handlers.insert(34, "page_down".to_owned()); // pgdn
-		self.key_handlers.insert(114, "view_file".to_owned()); // f3
-		self.key_handlers.insert(115, "edit_file".to_owned()); // f4
+		self.bind_key(Key::Tab, "switch_pane");
+		self.bind_key(Key::UpArrow, "move_up");
+		self.bind_key(Key::DownArrow, "move_down");
+		self.bind_key(Key::modify_key(SHIFT, Key::UpArrow), "select_up");
+		self.bind_key(Key::modify_key(SHIFT, Key::DownArrow), "select_down");
+		self.bind_key(Key::Space, "toggle_select");
+		self.bind_key(Key::Enter, "enter_item");
+		self.bind_key(Key::modify_key(ALT, Key::F4), "exit");
+		self.bind_key(Key::modify_key(CTRL, Key::KeyU), "update_self");
+		self.bind_key(Key::PageUp, "page_up");
+		self.bind_key(Key::PageDown, "page_down");
+		self.bind_key(Key::F3, "view_file");
+		self.bind_key(Key::F4, "edit_file");
+	}
+
+	fn bind_key<T: Into<i32>>(&mut self, key: T, command: &str) {
+		self.key_handlers.insert(key.into(), command.to_owned());
 	}
 
 	fn on_key(
