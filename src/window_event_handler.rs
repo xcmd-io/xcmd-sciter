@@ -5,7 +5,7 @@ use sciter::dom::{ELEMENT_STATE_BITS, HELEMENT};
 use sciter::{Element, EventHandler};
 use std::collections::HashMap;
 use std::process::Command;
-use xcmd_core::api::{System, Key};
+use xcmd_core::api::{Key, System};
 use xcmd_core::local::LocalSystem;
 use xcmd_core::sftp::SftpSystem;
 
