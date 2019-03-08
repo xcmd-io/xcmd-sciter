@@ -24,4 +24,7 @@ fn main() {
 
 	#[cfg(linux)]
 	copy_lib_to_output(&out_dir, "libsciter-gtk.so");
+
+	#[cfg(target_os = "macos")]
+	copy_lib_to_output(&out_dir, "sciter-osx-64.dylib");
 }
