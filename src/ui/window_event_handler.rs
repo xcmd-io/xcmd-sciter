@@ -77,7 +77,7 @@ impl WindowEventHandler {
 			root: None,
 			commands: HashMap::new(),
 			key_handlers: HashMap::new(),
-			key_map: HashMap::new(), // code -> index
+			key_map: HashMap::new(),   // code -> index
 			key_names: HashMap::new(), // name -> index
 			state: WindowState {
 				active_pane: 0,
@@ -89,13 +89,22 @@ impl WindowEventHandler {
 
 	fn get_key_map() -> HashMap<String, String> {
 		#[cfg(target_os = "windows")]
-		return toml::from_str::<HashMap<String, String>>(include_str!("../../config/windows.key-map.toml")).unwrap();
+		return toml::from_str::<HashMap<String, String>>(include_str!(
+			"../../config/windows.key-map.toml"
+		))
+		.unwrap();
 
 		#[cfg(target_os = "linux")]
-		return toml::from_str::<HashMap<String, String>>(include_str!("../../config/linux.key-map.toml")).unwrap();
+		return toml::from_str::<HashMap<String, String>>(include_str!(
+			"../../config/linux.key-map.toml"
+		))
+		.unwrap();
 
 		#[cfg(target_os = "macos")]
-		return toml::from_str::<HashMap<String, String>>(include_str!("../../config/macos.key-map.toml")).unwrap();
+		return toml::from_str::<HashMap<String, String>>(include_str!(
+			"../../config/macos.key-map.toml"
+		))
+		.unwrap();
 	}
 
 	fn initialize_key_map(&mut self) {
@@ -189,7 +198,8 @@ impl WindowEventHandler {
 		let key_bindings = serde_json::from_str::<Vec<KeyBinding>>(json).unwrap();
 		for key_binding in &key_bindings {
 			if let Some(key_index) = self.key_names.get(&key_binding.key) {
-				self.key_handlers.insert(*key_index, key_binding.command.to_owned());
+				self.key_handlers
+					.insert(*key_index, key_binding.command.to_owned());
 			}
 		}
 	}
@@ -202,7 +212,10 @@ impl WindowEventHandler {
 		ctrl_key: bool,
 		shift_key: bool,
 	) -> bool {
-		println!("on_key: type={}, keyCode={}, alt={}, ctrl={}, shift={}", event_type, key_code, alt_key, ctrl_key, shift_key);
+		println!(
+			"on_key: type={}, keyCode={}, alt={}, ctrl={}, shift={}",
+			event_type, key_code, alt_key, ctrl_key, shift_key
+		);
 		if event_type == BEHAVIOR_EVENTS::BUTTON_CLICK as i32 {
 			if let Some(key_index) = self.key_map.get(&key_code) {
 				let key = if alt_key { ALT } else { 0 }

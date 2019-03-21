@@ -9,8 +9,8 @@ use std::io::ErrorKind;
 #[cfg(unix)]
 use std::os::unix::fs::symlink;
 use std::path::{Path, PathBuf};
-use url::Url;
 use ui::WindowState;
+use url::Url;
 
 #[cfg(windows)]
 pub fn win_append_extension(filename: &str, extension: &str) -> String {
