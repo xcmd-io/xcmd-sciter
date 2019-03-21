@@ -1,7 +1,4 @@
-use super::column::Column;
-use super::name_renderer::NameRenderer;
-use super::size_renderer::SizeRenderer;
-use super::text_renderer::TextRenderer;
+use super::{Column, NameRenderer, SizeRenderer, TextRenderer};
 use sciter::Element;
 use std::rc::Rc;
 use xcmd_core::api::{Error, File, System, Value};

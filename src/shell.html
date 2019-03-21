@@ -6,8 +6,8 @@ html {
 	font-family: 'Segoe UI', sans-serif;
 	font-size: 10pt;
 	width: 100%;
-	background: var('window.background');
-	color: var('window.foreground');
+	background: var('window-background');
+	color: var('window-foreground');
 	prototype: AppWidget;
 }
 
@@ -27,14 +27,14 @@ pane {
 table {
 	width: *;
 	height: *;
-	background: var('list.background');
+	background: var('list-background');
 	border-collapse: collapse;
 	margin: 1dip 0;
 }
 
 thead {
-	background: var('list.headerBackground');
-	color: var('list.headerForeground');
+	background: var('list-headerBackground');
+	color: var('list-headerForeground');
 }
 
 tbody {
@@ -45,23 +45,23 @@ th {
 	font-weight: normal;
 	text-align: left;
 	padding: 1dip;
-	border: .5dip solid var('list.headerBorder');
+	border: .5dip solid var('list-headerBorder');
 }
 
 input {
 	font-size: 100%;
 	width: *;
-	color: var('input.foreground');
-	background: var('input.background');
+	color: var('input-foreground');
+	background: var('input-background');
 	padding: 1dip;
 	margin: 1dip 0;
-	border: .5dip solid var('input.border');
+	border: .5dip solid var('input-border');
 }
 
 input:focus {
-	border-color: var('input.focusBorder');
-	color: var('input.focusForeground');
-	background: var('input.focusBackground');
+	border-color: var('input-focusBorder');
+	color: var('input-focusForeground');
+	background: var('input-focusBackground');
 }
 
 td[behavior=file-icon] {
@@ -79,33 +79,33 @@ td[behavior=shell-icon] {
 }
 
 tbody tr[selected] {
-	color: var('inactiveList.selectedForeground');
-	background: var('inactiveList.selectedBackground');
+	color: var('inactiveList-selectedForeground');
+	background: var('inactiveList-selectedBackground');
 }
 
 tbody tr[active] {
-	color: var('inactiveList.activeForeground');
-	background: var('inactiveList.activeBackground');
+	color: var('inactiveList-activeForeground');
+	background: var('inactiveList-activeBackground');
 }
 
 tbody tr[selected][active] {
-	color: var('inactiveList.selectedActiveForeground');
-	background: var('inactiveList.selectedActiveBackground');
+	color: var('inactiveList-selectedActiveForeground');
+	background: var('inactiveList-selectedActiveBackground');
 }
 
 pane.pane-active tbody tr[selected] {
-	color: var('list.selectedForeground');
-	background: var('list.selectedBackground');
+	color: var('list-selectedForeground');
+	background: var('list-selectedBackground');
 }
 
 pane.pane-active tbody tr[active] {
-	color: var('list.activeForeground');
-	background: var('list.activeBackground');
+	color: var('list-activeForeground');
+	background: var('list-activeBackground');
 }
 
 pane.pane-active tbody tr[selected][active] {
-	color: var('list.selectedActiveForeground');
-	background: var('list.selectedActiveBackground');
+	color: var('list-selectedActiveForeground');
+	background: var('list-selectedActiveBackground');
 }
 
 
@@ -115,37 +115,37 @@ td {
 
 tabs {
 	display: block;
-	border-bottom: 2dip solid var('inactiveTab.background');
+	border-bottom: 2dip solid var('inactiveTab-background');
 	margin-top: 1.5dip;
 }
 
 tab {
 	display: inline-block;
-	color: var('inactiveTab.foreground');
-	background: var('inactiveTab.background');
+	color: var('inactiveTab-foreground');
+	background: var('inactiveTab-background');
 	padding: 1dip 2dip;
 	min-width: 100dip;
 }
 
 pane.pane-active tabs {
-	border-bottom-color: var('tab.background');
+	border-bottom-color: var('tab-background');
 }
 
 pane.pane-active tab {
-	color: var('tab.foreground');
-	background-color: var('tab.background');
+	color: var('tab-foreground');
+	background-color: var('tab-background');
 }
 
 status {
 	display: block;
 	padding: 1dip;
-	color: var('inactiveTab.foreground');
-	background-color: var('inactiveTab.background');
+	color: var('inactiveTab-foreground');
+	background-color: var('inactiveTab-background');
 }
 
 pane.pane-active status {
-	color: var('tab.foreground');
-	background-color: var('tab.background');
+	color: var('tab-foreground');
+	background-color: var('tab-background');
 }
 
 .align-right {
@@ -176,6 +176,10 @@ pane.pane-active status {
 		<status>7 files.</status>
 	</pane>
 	<script type="application/tiscript">
+		for (var (name,code) in Event) {
+			if (name.toString() like "VK_*")
+				stdout.println("name: %s, code: %s", name, code);
+		}
 		class AppWidget : Element {
 			function onKey(event) {
 				return view.on_key(event.type, event.keyCode, event.altKey, event.ctrlKey, event.shiftKey);

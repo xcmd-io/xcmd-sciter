@@ -9,13 +9,13 @@ pub struct Template {
 impl Template {
 	pub fn new(template: &str) -> Self {
 		Template {
-			regex: Regex::new(r#"var\('([a-zA-Z0-9.]*)'\)"#).expect("regex"),
+			regex: Regex::new(r#"var\('([a-zA-Z0-9\-]*)'\)"#).expect("regex"),
 			template: template.to_owned(),
 		}
 	}
 
-	pub fn parse_json(json: &str) -> HashMap<String, String> {
-		serde_json::from_str::<HashMap<String, String>>(json).unwrap()
+	pub fn parse_toml(toml: &str) -> HashMap<String, String> {
+		toml::from_str::<HashMap<String, String>>(toml).unwrap()
 	}
 
 	pub fn render(&self, map: &HashMap<String, String>) -> String {

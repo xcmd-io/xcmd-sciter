@@ -1,4 +1,4 @@
-use renderer::Renderer;
+use super::Renderer;
 use sciter::Element;
 use xcmd_core::api::{File, Value};
 

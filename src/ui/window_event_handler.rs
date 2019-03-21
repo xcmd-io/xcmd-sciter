@@ -1,11 +1,11 @@
-use super::pane::Pane;
-use super::self_update::update_self;
+use super::Pane;
+use crate::self_update::update_self;
 use sciter::dom::event::{EventReason, BEHAVIOR_EVENTS, EVENT_GROUPS, PHASE_MASK};
 use sciter::dom::{ELEMENT_STATE_BITS, HELEMENT};
 use sciter::{Element, EventHandler};
 use std::collections::HashMap;
 use std::process::Command;
-use xcmd_core::api::{Key, System};
+use xcmd_core::api::System;
 use xcmd_core::local::LocalSystem;
 use xcmd_core::sftp::SftpSystem;
 
@@ -16,6 +16,13 @@ where
 	F: (Fn(&mut WindowState, &Element) -> ()) + 'static,
 {
 	Box::new(f) as Callback
+}
+
+#[derive(Deserialize)]
+struct KeyBinding {
+	key: String,
+	command: String,
+	when: String,
 }
 
 pub struct WindowState {
@@ -54,6 +61,8 @@ impl WindowState {
 pub struct WindowEventHandler {
 	root: Option<Element>,
 	commands: HashMap<String, Callback>,
+	key_map: HashMap<i32, i32>,
+	key_names: HashMap<String, i32>,
 	key_handlers: HashMap<i32, String>,
 	state: WindowState,
 }
@@ -68,11 +77,42 @@ impl WindowEventHandler {
 			root: None,
 			commands: HashMap::new(),
 			key_handlers: HashMap::new(),
+			key_map: HashMap::new(), // code -> index
+			key_names: HashMap::new(), // name -> index
 			state: WindowState {
 				active_pane: 0,
 				left_pane: None,
 				right_pane: None,
 			},
+		}
+	}
+
+	fn get_key_map() -> HashMap<String, String> {
+		#[cfg(target_os = "windows")]
+		return toml::from_str::<HashMap<String, String>>(include_str!("../../config/windows.key-map.toml")).unwrap();
+
+		#[cfg(target_os = "linux")]
+		return toml::from_str::<HashMap<String, String>>(include_str!("../../config/linux.key-map.toml")).unwrap();
+
+		#[cfg(target_os = "macos")]
+		return toml::from_str::<HashMap<String, String>>(include_str!("../../config/macos.key-map.toml")).unwrap();
+	}
+
+	fn initialize_key_map(&mut self) {
+		let key_map = Self::get_key_map();
+		let mut key_names_len = self.key_names.len() as i32;
+		for (key_code, key_name) in &key_map {
+			let key_code = key_code.parse::<i32>().unwrap();
+			let key_index = if let Some(key_index) = self.key_names.get(key_name) {
+				*key_index
+			} else {
+				key_names_len
+			};
+			if key_names_len == key_index {
+				self.key_names.insert(key_name.to_owned(), key_index);
+				key_names_len = key_names_len + 1;
+			}
+			self.key_map.insert(key_code, key_index);
 		}
 	}
 
@@ -83,85 +123,75 @@ impl WindowEventHandler {
 		self.root = Some(root);
 
 		self.commands.insert(
-			"switch_pane".to_owned(),
+			"pane.switchPane".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| switch_pane(state)),
 		);
 		self.commands.insert(
-			"move_up".to_owned(),
+			"pane.moveUp".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| move_up(state)),
 		);
 		self.commands.insert(
-			"move_down".to_owned(),
+			"pane.moveDown".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| move_down(state)),
 		);
 		self.commands.insert(
-			"move_home".to_owned(),
+			"pane.moveHome".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| move_home(state)),
 		);
 		self.commands.insert(
-			"move_end".to_owned(),
+			"pane.moveEnd".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| move_end(state)),
 		);
 		self.commands.insert(
-			"page_up".to_owned(),
+			"pane.pageUp".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| page_up(state)),
 		);
 		self.commands.insert(
-			"page_down".to_owned(),
+			"pane.pageDown".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| page_down(state)),
 		);
 		self.commands.insert(
-			"select_up".to_owned(),
+			"pane.selectUp".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| select_up(state)),
 		);
 		self.commands.insert(
-			"select_down".to_owned(),
+			"pane.selectDown".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| select_down(state)),
 		);
 		self.commands.insert(
-			"toggle_select".to_owned(),
+			"pane.toggleSelect".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| toggle_select(state)),
 		);
 		self.commands.insert(
-			"enter_item".to_owned(),
+			"pane.enterItem".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| enter_item(state)),
 		);
 		self.commands.insert(
-			"exit".to_owned(),
+			"pane.exit".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| exit(state)),
 		);
 		self.commands.insert(
-			"update_self".to_owned(),
+			"pane.updateSelf".to_owned(),
 			mk_callback(|state: &mut WindowState, root: &Element| update_self(state, root)),
 		);
 		self.commands.insert(
-			"view_file".to_owned(),
+			"pane.viewFile".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| view_file(state)),
 		);
 		self.commands.insert(
-			"edit_file".to_owned(),
+			"pane.editFile".to_owned(),
 			mk_callback(|state: &mut WindowState, _root: &Element| edit_file(state)),
 		);
 
-		self.bind_key(Key::Tab, "switch_pane");
-		self.bind_key(Key::UpArrow, "move_up");
-		self.bind_key(Key::DownArrow, "move_down");
-		self.bind_key(Key::Home, "move_home");
-		self.bind_key(Key::End, "move_end");
-		self.bind_key(Key::modify_key(SHIFT, Key::UpArrow), "select_up");
-		self.bind_key(Key::modify_key(SHIFT, Key::DownArrow), "select_down");
-		self.bind_key(Key::Space, "toggle_select");
-		self.bind_key(Key::Enter, "enter_item");
-		self.bind_key(Key::modify_key(ALT, Key::F4), "exit");
-		self.bind_key(Key::modify_key(CTRL, Key::KeyU), "update_self");
-		self.bind_key(Key::PageUp, "page_up");
-		self.bind_key(Key::PageDown, "page_down");
-		self.bind_key(Key::F3, "view_file");
-		self.bind_key(Key::F4, "edit_file");
-	}
+		self.initialize_key_map();
 
-	fn bind_key<T: Into<i32>>(&mut self, key: T, command: &str) {
-		self.key_handlers.insert(key.into(), command.to_owned());
+		let json = include_str!("../../config/keybindings.json");
+		let key_bindings = serde_json::from_str::<Vec<KeyBinding>>(json).unwrap();
+		for key_binding in &key_bindings {
+			if let Some(key_index) = self.key_names.get(&key_binding.key) {
+				self.key_handlers.insert(*key_index, key_binding.command.to_owned());
+			}
+		}
 	}
 
 	fn on_key(
@@ -172,25 +202,29 @@ impl WindowEventHandler {
 		ctrl_key: bool,
 		shift_key: bool,
 	) -> bool {
+		println!("on_key: type={}, keyCode={}, alt={}, ctrl={}, shift={}", event_type, key_code, alt_key, ctrl_key, shift_key);
 		if event_type == BEHAVIOR_EVENTS::BUTTON_CLICK as i32 {
-			let key = if alt_key { ALT } else { 0 }
-				| if ctrl_key { CTRL } else { 0 }
-				| if shift_key { SHIFT } else { 0 }
-				| key_code;
-			// println!("on_key: type={}, keyCode={}, alt={}, ctrl={}, shift={}", event_type, key_code, alt_key, ctrl_key, shift_key);
-			let mut key_command = None;
-			if let Some(key_handler) = self.key_handlers.get(&key) {
-				if let Some(command) = self.commands.get(key_handler) {
-					key_command = Some(command);
+			if let Some(key_index) = self.key_map.get(&key_code) {
+				let key = if alt_key { ALT } else { 0 }
+					| if ctrl_key { CTRL } else { 0 }
+					| if shift_key { SHIFT } else { 0 }
+					| key_index;
+				let mut key_command = None;
+				if let Some(key_handler) = self.key_handlers.get(&key) {
+					if let Some(command) = self.commands.get(key_handler) {
+						key_command = Some(command);
+					}
+				};
+				let mut state = &mut self.state;
+				if let Some(command) = key_command {
+					if let Some(root) = &self.root {
+						command(&mut state, &root);
+					}
 				}
-			};
-			let mut state = &mut self.state;
-			if let Some(command) = key_command {
-				if let Some(root) = &self.root {
-					command(&mut state, &root);
-				}
+				true
+			} else {
+				false
 			}
-			true
 		} else {
 			false
 		}

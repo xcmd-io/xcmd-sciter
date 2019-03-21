@@ -10,7 +10,7 @@ use std::io::ErrorKind;
 use std::os::unix::fs::symlink;
 use std::path::{Path, PathBuf};
 use url::Url;
-use window_event_handler::WindowState;
+use ui::WindowState;
 
 #[cfg(windows)]
 pub fn win_append_extension(filename: &str, extension: &str) -> String {
