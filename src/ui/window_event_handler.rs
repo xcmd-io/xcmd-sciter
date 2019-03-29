@@ -11,7 +11,7 @@ use xcmd_core::sftp::SftpSystem;
 
 type Callback = Box<(Fn(&mut WindowState, &Element) -> ()) + 'static>;
 
-fn mk_callback<F>(f: F) -> Callback
+pub fn mk_callback<F>(f: F) -> Callback
 where
 	F: (Fn(&mut WindowState, &Element) -> ()) + 'static,
 {
@@ -125,70 +125,75 @@ impl WindowEventHandler {
 		}
 	}
 
+	pub fn register_command(&mut self, command_name: &str, command_handler: Callback) {
+		self.commands
+			.insert(command_name.to_owned(), command_handler);
+	}
+
 	fn on_document_ready(&mut self, root: HELEMENT) {
 		let root = Element::from(root);
 		self.state.left_pane = Some(self.create_pane(&mut find_first(&root, "#left-pane"), 0));
 		self.state.right_pane = Some(self.create_pane(&mut find_first(&root, "#right-pane"), 1));
 		self.root = Some(root);
 
-		self.commands.insert(
-			"pane.switchPane".to_owned(),
+		self.register_command(
+			"pane.switchPane",
 			mk_callback(|state: &mut WindowState, _root: &Element| switch_pane(state)),
 		);
-		self.commands.insert(
-			"pane.moveUp".to_owned(),
+		self.register_command(
+			"pane.moveUp",
 			mk_callback(|state: &mut WindowState, _root: &Element| move_up(state)),
 		);
-		self.commands.insert(
-			"pane.moveDown".to_owned(),
+		self.register_command(
+			"pane.moveDown",
 			mk_callback(|state: &mut WindowState, _root: &Element| move_down(state)),
 		);
-		self.commands.insert(
-			"pane.moveHome".to_owned(),
+		self.register_command(
+			"pane.moveHome",
 			mk_callback(|state: &mut WindowState, _root: &Element| move_home(state)),
 		);
-		self.commands.insert(
-			"pane.moveEnd".to_owned(),
+		self.register_command(
+			"pane.moveEnd",
 			mk_callback(|state: &mut WindowState, _root: &Element| move_end(state)),
 		);
-		self.commands.insert(
-			"pane.pageUp".to_owned(),
+		self.register_command(
+			"pane.pageUp",
 			mk_callback(|state: &mut WindowState, _root: &Element| page_up(state)),
 		);
-		self.commands.insert(
-			"pane.pageDown".to_owned(),
+		self.register_command(
+			"pane.pageDown",
 			mk_callback(|state: &mut WindowState, _root: &Element| page_down(state)),
 		);
-		self.commands.insert(
-			"pane.selectUp".to_owned(),
+		self.register_command(
+			"pane.selectUp",
 			mk_callback(|state: &mut WindowState, _root: &Element| select_up(state)),
 		);
-		self.commands.insert(
-			"pane.selectDown".to_owned(),
+		self.register_command(
+			"pane.selectDown",
 			mk_callback(|state: &mut WindowState, _root: &Element| select_down(state)),
 		);
-		self.commands.insert(
-			"pane.toggleSelect".to_owned(),
+		self.register_command(
+			"pane.toggleSelect",
 			mk_callback(|state: &mut WindowState, _root: &Element| toggle_select(state)),
 		);
-		self.commands.insert(
-			"pane.enterItem".to_owned(),
+		self.register_command(
+			"pane.enterItem",
 			mk_callback(|state: &mut WindowState, _root: &Element| enter_item(state)),
 		);
-		self.commands.insert(
-			"pane.exit".to_owned(),
-			mk_callback(|state: &mut WindowState, _root: &Element| exit(state)),
+		self.register_command(
+			"pane.exit",
+			mk_callback(|state: &mut WindowState, root: &Element| exit(state, root)),
 		);
-		self.commands.insert(
-			"pane.updateSelf".to_owned(),
+		self.register_command(
+			"pane.updateSelf",
 			mk_callback(|state: &mut WindowState, root: &Element| update_self(state, root)),
 		);
-		self.commands.insert(
-			"pane.viewFile".to_owned(),
+		self.register_command(
+			"pane.viewFile",
 			mk_callback(|state: &mut WindowState, _root: &Element| view_file(state)),
 		);
-		self.commands.insert(
-			"pane.editFile".to_owned(),
+		self.register_command(
+			"pane.editFile",
 			mk_callback(|state: &mut WindowState, _root: &Element| edit_file(state)),
 		);
 
@@ -417,8 +422,8 @@ fn edit_file(state: &mut WindowState) {
 	}
 }
 
-fn exit(_state: &mut WindowState) {
-	// TODO: close application
+fn exit(_state: &mut WindowState, root: &Element) {
+	root.eval_script("view.close()").unwrap();
 }
 
 // fn resolve_link(path: &Path) -> PathBuf {

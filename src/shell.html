@@ -176,10 +176,6 @@ pane.pane-active status {
 		<status>7 files.</status>
 	</pane>
 	<script type="application/tiscript">
-		for (var (name,code) in Event) {
-			if (name.toString() like "VK_*")
-				stdout.println("name: %s, code: %s", name, code);
-		}
 		class AppWidget : Element {
 			function onKey(event) {
 				return view.on_key(event.type, event.keyCode, event.altKey, event.ctrlKey, event.shiftKey);
