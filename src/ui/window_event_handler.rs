@@ -197,10 +197,41 @@ impl WindowEventHandler {
 		let json = include_str!("../../config/keybindings.json");
 		let key_bindings = serde_json::from_str::<Vec<KeyBinding>>(json).unwrap();
 		for key_binding in &key_bindings {
-			if let Some(key_index) = self.key_names.get(&key_binding.key) {
+			if let Some(modified_key_index) = self.parse_key(&key_binding.key) {
 				self.key_handlers
-					.insert(*key_index, key_binding.command.to_owned());
+					.insert(modified_key_index, key_binding.command.to_owned());
 			}
+		}
+	}
+
+	fn parse_key(&mut self, key: &str) -> Option<i32> {
+		let mut key = key;
+		let mut modifier = 0;
+		loop {
+			let mut found_modifier = false;
+			if key.starts_with("alt+") {
+				key = &key["alt+".len()..];
+				modifier |= ALT;
+				found_modifier = true;
+			}
+			if key.starts_with("shift+") {
+				key = &key["shift+".len()..];
+				modifier |= SHIFT;
+				found_modifier = true;
+			}
+			if key.starts_with("ctrl+") {
+				key = &key["ctrl+".len()..];
+				modifier |= CTRL;
+				found_modifier = true;
+			}
+			if !found_modifier {
+				break;
+			}
+		}
+		if let Some(key_index) = self.key_names.get(key) {
+			Some(modifier | *key_index)
+		} else {
+			None
 		}
 	}
 
