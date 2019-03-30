@@ -51,4 +51,12 @@
 	"key": "f4",
 	"command": "pane.editFile",
 	"when": "paneFocus"
+},{
+	"key": "ctrl+p",
+	"command": "palette.show",
+	"when": "paneFocus"
+},{
+	"key": "escape",
+	"command": "palette.hide",
+	"when": "paletteFocus"
 }]

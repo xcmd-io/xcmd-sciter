@@ -1,4 +1,4 @@
-use super::Pane;
+use super::{Palette, Pane};
 use crate::self_update::update_self;
 use sciter::dom::event::{EventReason, BEHAVIOR_EVENTS, EVENT_GROUPS, PHASE_MASK};
 use sciter::dom::{ELEMENT_STATE_BITS, HELEMENT};
@@ -29,6 +29,7 @@ pub struct WindowState {
 	active_pane: u8,
 	left_pane: Option<Pane>,
 	right_pane: Option<Pane>,
+	palette: Option<Palette>,
 }
 
 impl WindowState {
@@ -83,6 +84,7 @@ impl WindowEventHandler {
 				active_pane: 0,
 				left_pane: None,
 				right_pane: None,
+				palette: None,
 			},
 		}
 	}
@@ -134,6 +136,7 @@ impl WindowEventHandler {
 		let root = Element::from(root);
 		self.state.left_pane = Some(self.create_pane(&mut find_first(&root, "#left-pane"), 0));
 		self.state.right_pane = Some(self.create_pane(&mut find_first(&root, "#right-pane"), 1));
+		self.state.palette = Some(Palette::new(&mut find_first(&root, "#palette")));
 		self.root = Some(root);
 
 		self.register_command(
@@ -196,6 +199,14 @@ impl WindowEventHandler {
 			"pane.editFile",
 			mk_callback(|state: &mut WindowState, _root: &Element| edit_file(state)),
 		);
+		self.register_command(
+			"palette.show",
+			mk_callback(|state: &mut WindowState, _root: &Element| show_palette(state)),
+		);
+		self.register_command(
+			"palette.hide",
+			mk_callback(|state: &mut WindowState, _root: &Element| hide_palette(state)),
+		);
 
 		self.initialize_key_map();
 
@@ -248,10 +259,10 @@ impl WindowEventHandler {
 		ctrl_key: bool,
 		shift_key: bool,
 	) -> bool {
-		println!(
-			"on_key: type={}, keyCode={}, alt={}, ctrl={}, shift={}",
-			event_type, key_code, alt_key, ctrl_key, shift_key
-		);
+		// println!(
+		// 	"on_key: type={}, keyCode={}, alt={}, ctrl={}, shift={}",
+		// 	event_type, key_code, alt_key, ctrl_key, shift_key
+		// );
 		if event_type == BEHAVIOR_EVENTS::BUTTON_CLICK as i32 {
 			if let Some(key_index) = self.key_map.get(&key_code) {
 				let key = if alt_key { ALT } else { 0 }
@@ -424,6 +435,18 @@ fn edit_file(state: &mut WindowState) {
 
 fn exit(_state: &mut WindowState, root: &Element) {
 	root.eval_script("view.close()").unwrap();
+}
+
+fn show_palette(state: &mut WindowState) {
+	if let Some(palette) = &mut state.palette {
+		palette.activate(true);
+	}
+}
+
+fn hide_palette(state: &mut WindowState) {
+	if let Some(palette) = &mut state.palette {
+		palette.activate(false);
+	}
 }
 
 // fn resolve_link(path: &Path) -> PathBuf {

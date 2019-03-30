@@ -1,5 +1,8 @@
 window-background = '#252525'
 window-foreground = '#b4b4b4'
+palette-background = '#252525'
+palette-foreground = '#b4b4b4'
+palette-border = '#000'
 list-background = '#1e1e1e'
 list-headerBackground = '#2d2d2d'
 list-headerForeground = '#949494'

@@ -13,6 +13,13 @@ html {
 
 body {
 	margin: 0;
+}
+
+panes {
+	position: absolute;
+	display: block;
+	width: 100%;
+	height: 100%;
 	flow: horizontal;
 }
 
@@ -24,12 +31,13 @@ pane {
 	padding: 1dip;
 }
 
-table {
+pane>table {
 	width: *;
 	height: *;
 	background: var('list-background');
 	border-collapse: collapse;
 	margin: 1dip 0;
+	padding: 0;
 }
 
 thead {
@@ -108,7 +116,6 @@ pane.pane-active tbody tr[selected][active] {
 	background: var('list-selectedActiveBackground');
 }
 
-
 td {
 	padding: 0 1dip;
 }
@@ -136,6 +143,47 @@ pane.pane-active tab {
 	background-color: var('tab-background');
 }
 
+palette {
+	display: none;
+	position: absolute;
+	top: 46dip;
+	margin: 0 auto;
+	width: 80%;
+	max-width: 600dip;
+	max-height: 350dip;
+	background: var('palette-background');
+	color: var('palette-foreground');
+	box-shadow: var('palette-border') 0 5dip 8dip;
+	flow: vertical;
+}
+
+palette[active] {
+	display: block;
+}
+
+palette>input {
+	margin: 5dip;
+}
+
+palette>table {
+	width: *;
+	height: *;
+	background: var('palette-background');
+	color: var('palette-foreground');
+	border-collapse: collapse;
+	padding: 0;
+}
+
+palette>table>tbody {
+	height: 100%;
+	max-height: 300dip;
+	overflow: auto;
+}
+
+palette>table>tbody>tr>td {
+	padding: 1dip 7dip;
+}
+
 status {
 	display: block;
 	padding: 1dip;
@@ -153,28 +201,36 @@ pane.pane-active status {
 }
 	</style>
 </head><body>
-	<pane id="left-pane">
-		<tabs>
-			<tab>node_modules</tab>
-		</tabs>
-		<input value="C:\work\Web\AccountController"/>
+	<panes>
+		<pane id="left-pane">
+			<tabs>
+				<tab>node_modules</tab>
+			</tabs>
+			<input value="C:\work\Web\AccountController"/>
+			<table>
+				<thead/>
+				<tbody/>
+			</table>
+			<status>7 files.</status>
+		</pane>
+		<pane id="right-pane">
+			<tabs>
+				<tab>dist</tab>
+			</tabs>
+			<input value="C:\work\cloud-commander\design"/>
+			<table>
+				<thead/>
+				<tbody/>
+			</table>
+			<status>7 files.</status>
+		</pane>
+	</panes>
+	<palette id="palette">
+		<input value="&gt;"/>
 		<table>
-			<thead/>
 			<tbody/>
 		</table>
-		<status>7 files.</status>
-	</pane>
-	<pane id="right-pane">
-		<tabs>
-			<tab>dist</tab>
-		</tabs>
-		<input value="C:\work\cloud-commander\design"/>
-		<table>
-			<thead/>
-			<tbody/>
-		</table>
-		<status>7 files.</status>
-	</pane>
+	</palette>
 	<script type="application/tiscript">
 		class AppWidget : Element {
 			function onKey(event) {
