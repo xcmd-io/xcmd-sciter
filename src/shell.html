@@ -40,13 +40,25 @@ pane>table {
 	padding: 0;
 }
 
-thead {
+pane>table>thead {
 	background: var('list-headerBackground');
 	color: var('list-headerForeground');
 }
 
-tbody {
+pane>table>tbody {
 	overflow: auto;
+}
+
+pane>table>thead>tr>th,
+pane>table>tbody>tr>td {
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	width: 60dip;
+}
+
+pane>table>thead>tr>th:first-child,
+pane>table>tbody>tr>td:first-child {
+	width: *;
 }
 
 th {
@@ -75,6 +87,7 @@ input:focus {
 td[behavior=file-icon] {
 	padding-left: 17dip;
 	behavior: file-icon;
+	white-space: nowrap;
 	foreground-repeat: no-repeat;
 	foreground-position: 0 50%;
 }

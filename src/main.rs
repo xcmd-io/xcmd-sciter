@@ -38,7 +38,7 @@ fn main() {
 	.unwrap();
 	sciter::set_options(RuntimeOptions::DebugMode(true)).unwrap();
 	let template = Template::new(include_str!("shell.html"));
-	let color_theme = Template::parse_toml(include_str!("../config/dark.color-theme.toml"));
+	let color_theme = Template::parse_toml(include_str!("../config/light.color-theme.toml"));
 	let rendered_template = template.render(&color_theme);
 	let mut html_with_bom = vec![0xef, 0xbb, 0xbf];
 	html_with_bom.extend_from_slice(rendered_template.as_bytes());
