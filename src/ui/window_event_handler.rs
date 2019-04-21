@@ -1,10 +1,13 @@
 use super::{Palette, Pane};
+use crate::data_source::DataSource;
 use crate::self_update::update_self;
 use sciter::dom::event::{EventReason, BEHAVIOR_EVENTS, EVENT_GROUPS, PHASE_MASK};
 use sciter::dom::{ELEMENT_STATE_BITS, HELEMENT};
-use sciter::{Element, EventHandler};
+use sciter::{Element, EventHandler, Value};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::process::Command;
+use std::rc::Rc;
 use xcmd_core::api::System;
 use xcmd_core::local::LocalSystem;
 use xcmd_core::sftp::SftpSystem;
@@ -30,6 +33,7 @@ pub struct WindowState {
 	left_pane: Option<Pane>,
 	right_pane: Option<Pane>,
 	palette: Option<Palette>,
+	data_sources: HashMap<String, Rc<RefCell<DataSource>>>,
 }
 
 impl WindowState {
@@ -85,6 +89,7 @@ impl WindowEventHandler {
 				left_pane: None,
 				right_pane: None,
 				palette: None,
+				data_sources: HashMap::new(),
 			},
 		}
 	}
@@ -134,8 +139,23 @@ impl WindowEventHandler {
 
 	fn on_document_ready(&mut self, root: HELEMENT) {
 		let root = Element::from(root);
-		self.state.left_pane = Some(self.create_pane(&mut find_first(&root, "#left-pane"), 0));
-		self.state.right_pane = Some(self.create_pane(&mut find_first(&root, "#right-pane"), 1));
+
+		let left_pane = self.create_pane(&mut find_first(&root, "#left-pane"), 0);
+		let left_data_source = Rc::clone(&left_pane.data_source);
+		self.state.data_sources.insert(
+			"left-pane".to_owned(),
+			left_data_source as Rc<RefCell<DataSource>>,
+		);
+
+		let right_pane = self.create_pane(&mut find_first(&root, "#right-pane"), 0);
+		let right_data_source = Rc::clone(&right_pane.data_source);
+		self.state.data_sources.insert(
+			"right-pane".to_owned(),
+			right_data_source as Rc<RefCell<DataSource>>,
+		);
+
+		self.state.left_pane = Some(left_pane);
+		self.state.right_pane = Some(right_pane);
 		self.state.palette = Some(Palette::new(&mut find_first(&root, "#palette")));
 		self.root = Some(root);
 
@@ -218,6 +238,14 @@ impl WindowEventHandler {
 					.insert(modified_key_index, key_binding.command.to_owned());
 			}
 		}
+
+		if let Some(ref mut pane) = &mut self.state.left_pane {
+			pane.update(None);
+		}
+		if let Some(ref mut pane) = &mut self.state.right_pane {
+			pane.activate(false);
+			pane.update(None);
+		}
 	}
 
 	fn parse_key(&mut self, key: &str) -> Option<i32> {
@@ -290,6 +318,41 @@ impl WindowEventHandler {
 		}
 	}
 
+	fn on_resize_files(&mut self, files_height: i32, item_height: i32) {
+		if let Some(ref mut pane) = &mut self.state.left_pane {
+			pane.set_files_height(files_height, item_height);
+		}
+		if let Some(ref mut pane) = &mut self.state.right_pane {
+			pane.set_files_height(files_height, item_height);
+		}
+	}
+
+	fn data_source_columns(&mut self, name: String) -> Value {
+		if let Some(data_source) = self.state.data_sources.get(&name) {
+			data_source.borrow().data_source_columns()
+		} else {
+			Value::array(0)
+		}
+	}
+
+	fn data_source_row_count(&mut self, name: String) -> i32 {
+		if let Some(data_source) = self.state.data_sources.get(&name) {
+			data_source.borrow().data_source_row_count()
+		} else {
+			0
+		}
+	}
+
+	fn data_source_rows_data(&mut self, name: String, row_index: i32, row_count: i32) -> Value {
+		if let Some(data_source) = self.state.data_sources.get(&name) {
+			data_source
+				.borrow()
+				.data_source_rows_data(row_index, row_count)
+		} else {
+			Value::array(row_count as usize)
+		}
+	}
+
 	fn create_pane(&self, element: &mut Element, index: u8) -> Pane {
 		let system: Box<System> = if index < 2 {
 			Box::new(LocalSystem::default())
@@ -297,7 +360,6 @@ impl WindowEventHandler {
 			Box::new(SftpSystem::new())
 		};
 		let mut pane = Pane::new(element, index == self.state.active_pane, system);
-		pane.update(None);
 		pane
 	}
 }
@@ -315,6 +377,10 @@ impl EventHandler for WindowEventHandler {
 	#[allow(clippy::eval_order_dependence)]
 	dispatch_script_call! {
 		fn on_key(i32, i32, bool, bool, bool);
+		fn data_source_columns(String);
+		fn data_source_row_count(String);
+		fn data_source_rows_data(String, i32, i32);
+		fn on_resize_files(i32, i32);
 	}
 
 	fn on_event(
@@ -413,22 +479,16 @@ fn select_down(state: &mut WindowState) {
 
 fn view_file(state: &mut WindowState) {
 	if let Some(pane) = state.get_active_pane() {
-		if let Some(file) = pane.files.get(pane.active_index as usize) {
-			Command::new("lister")
-				.arg(super::pane::get_path(file))
-				.output()
-				.expect("lister");
+		if let Some(path) = pane.get_active_path() {
+			Command::new("lister").arg(path).output().expect("lister");
 		}
 	}
 }
 
 fn edit_file(state: &mut WindowState) {
 	if let Some(pane) = state.get_active_pane() {
-		if let Some(file) = pane.files.get(pane.active_index as usize) {
-			Command::new("notepad")
-				.arg(super::pane::get_path(file))
-				.output()
-				.expect("lister");
+		if let Some(path) = pane.get_active_path() {
+			Command::new("notepad").arg(path).output().expect("notepad");
 		}
 	}
 }

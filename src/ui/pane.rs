@@ -1,21 +1,24 @@
-use super::{Column, NameRenderer, SizeRenderer, TextRenderer};
+use super::Column;
+use data_source::DataSource;
+use sciter::dom::event::{BEHAVIOR_EVENTS, CLICK_REASON};
 use sciter::Element;
+use separator::Separatable;
+use std::cell::RefCell;
 use std::rc::Rc;
-use xcmd_core::api::{Error, File, System, Value};
+use xcmd_core::api::{Error, File, Icon, System, Value};
 
 pub struct Pane {
 	active: bool,
-	pub active_index: u32,
 	pub system: Box<System>,
-	pub files: Vec<File>,
-	columns: Vec<Column>,
 	field_names: Vec<String>,
+	pub data_source: Rc<RefCell<FilesDataSource>>,
 	parent: String,
 	pane: Element,
 	tab: Element,
 	input: Element,
-	thead: Element,
-	tbody: Element,
+	vtable: Element,
+	files_height: i32,
+	item_height: i32,
 }
 
 impl Pane {
@@ -31,192 +34,156 @@ impl Pane {
 		println!("parent_path={}", parent_path);
 		let mut pane = Pane {
 			active,
-			active_index: 0,
 			system,
-			files: Vec::new(),
-			columns: Vec::new(),
+			data_source: Rc::new(RefCell::new(FilesDataSource::new())),
 			field_names,
 			parent: parent_path,
 			pane: Element::from(element.as_ptr()),
 			tab: element.find_first("tab").unwrap().unwrap(),
 			input: element.find_first("input").unwrap().unwrap(),
-			thead: element.find_first("thead").unwrap().unwrap(),
-			tbody: element.find_first("tbody").unwrap().unwrap(),
+			vtable: element.find_first("vtable").unwrap().unwrap(),
+			files_height: 640,
+			item_height: 32,
 		};
 		if pane.active {
 			element.set_attribute("class", "pane-active").unwrap();
 			pane.tab.set_attribute("class", "tab-active").unwrap();
 		}
-		pane.columns
-			.push(Column::new("Name", Box::new(NameRenderer::new())));
-		pane.columns
-			.push(Column::new("Ext", Box::new(TextRenderer::new())));
-		pane.columns
-			.push(Column::new("Size", Box::new(SizeRenderer::new())));
-		pane.columns
-			.push(Column::new("Date", Box::new(TextRenderer::new())));
-		pane.columns
-			.push(Column::new("Attributes", Box::new(TextRenderer::new())));
-		pane.append_title_row();
+		if let Ok(ref mut data_source) = RefCell::try_borrow_mut(&mut pane.data_source) {
+			data_source.columns.push(Column::new("Name"));
+			data_source.columns.push(Column::new("Ext"));
+			data_source.columns.push(Column::new("Size"));
+			data_source.columns.push(Column::new("Date"));
+			data_source.columns.push(Column::new("Attributes"));
+		}
 		pane
 	}
 
 	pub fn update(&mut self, selected_path: Option<&str>) {
+		let now = std::time::Instant::now();
 		let filename = &self.system.get_filename(&self.parent);
 		self.input.set_text(&self.parent).unwrap();
 		self.tab.set_text(filename).unwrap();
-		self.tbody.clear().unwrap();
 		match self.list_files() {
 			Ok(files) => {
+				let mut active_index: Option<usize> = None;
 				let mut path_index: Option<usize> = None;
 				for (index, file) in files.iter().enumerate() {
-					self.append_row(file, index as u32);
-					path_index = if let Some(value) = path_index {
-						Some(value)
-					} else {
-						file.get_field_index("path")
-					};
-					if Some(get_path_at(&file, path_index).as_ref()) == selected_path {
-						self.set_active_item(index as u32);
+					if active_index == None {
+						path_index = path_index.or(file.get_field_index("path"));
+						if Some(get_path_at(&file, path_index).as_ref()) == selected_path {
+							active_index = Some(index);
+						}
 					}
 				}
-				self.files = files;
+				if let Ok(ref mut data_source) = RefCell::try_borrow_mut(&mut self.data_source) {
+					data_source.files = files;
+				}
+				self.set_active_item(active_index.unwrap_or(0) as u32);
 			}
 			Err(e) => println!("Error: {}", e),
 		}
+		println!("{:?}", now.elapsed());
+		self.vtable
+			.send_event(
+				BEHAVIOR_EVENTS::CHANGE,
+				Some(CLICK_REASON::SYNTHESIZED),
+				None,
+			)
+			.unwrap();
 	}
 
-	fn append_title_row(&mut self) {
-		let mut row = Element::create("tr").unwrap();
-		self.thead.append(&row).unwrap();
-		for column in &self.columns {
-			let cell = Element::with_text("th", column.get_name()).unwrap();
-			row.append(&cell).unwrap();
+	pub fn get_active_path(&self) -> Option<String> {
+		let data_source = self.data_source.borrow();
+		if let Some(active_file) = data_source.files.get(data_source.active_index as usize) {
+			Some(get_path(active_file))
+		} else {
+			None
 		}
 	}
 
-	fn append_row(&mut self, file: &File, index: u32) {
-		let mut row = Element::create("tr").unwrap();
-		row.set_attribute("path", get_path(&file).as_ref()).unwrap();
-		if index == self.active_index {
-			row.set_attribute("active", "true").unwrap();
-		}
-		self.tbody.append(&row).unwrap();
-
-		for (index, value) in (&file.fields).iter().enumerate() {
-			let column = &self.columns[index];
-			let cell = column.render_value(file, &value);
-			row.append(&cell).unwrap();
-		}
-	}
-
-	pub fn get_item(&self, index: u32) -> Option<Element> {
-		self.tbody.child(index as usize)
+	pub fn set_files_height(&mut self, files_height: i32, item_height: i32) {
+		self.files_height = files_height;
+		self.item_height = item_height;
 	}
 
 	pub fn move_up(&mut self) {
-		if self.active_index != 0 {
-			let active_index = self.active_index - 1;
+		if self.data_source.borrow().active_index != 0 {
+			let active_index = self.data_source.borrow().active_index - 1;
 			self.set_active_item(active_index);
 		}
 	}
 
 	pub fn move_down(&mut self) {
-		let active_index = self.active_index + 1;
+		let active_index = std::cmp::min(
+			self.data_source.borrow().files.len() as u32 - 1,
+			self.data_source.borrow().active_index + 1,
+		);
 		self.set_active_item(active_index);
 	}
 
 	pub fn move_home(&mut self) {
-		if self.active_index != 0 {
-			self.set_active_item(0);
-		}
+		self.set_active_item(0);
 	}
 
 	pub fn move_end(&mut self) {
-		if !self.files.is_empty() {
-			let active_index = self.files.len() as u32 - 1;
-			if self.active_index != active_index {
-				self.set_active_item(active_index);
-			}
+		if !self.data_source.borrow().files.is_empty() {
+			let active_index = self.data_source.borrow().files.len() as u32 - 1;
+			self.set_active_item(active_index);
 		}
 	}
 
 	pub fn page_up(&mut self) {
-		if self.active_index != 0 {
-			if let Some(active_item) = self.get_item(self.active_index) {
-				let height = active_item
-					.call_method("box", &[sciter::Value::symbol("height")])
-					.expect("row height")
-					.to_int()
-					.expect("int");
-				let tbody = active_item.parent().expect("tbody");
-				let tbody_height = tbody
-					.call_method("box", &[sciter::Value::symbol("height")])
-					.expect("tbody height")
-					.to_int()
-					.expect("int");
-				let items_per_page = (tbody_height / height) as u32;
-				let active_index = if self.active_index < items_per_page {
-					0
-				} else {
-					self.active_index - items_per_page
-				};
-				self.set_active_item(active_index);
-			}
+		if !self.data_source.borrow().files.is_empty() {
+			let page_size = (self.files_height / self.item_height) as u32;
+			let active_index = self.data_source.borrow().active_index;
+			let active_index = if active_index >= page_size {
+				active_index - page_size
+			} else {
+				0
+			};
+			self.set_active_item(active_index);
 		}
 	}
 
 	pub fn page_down(&mut self) {
-		if let Some(active_item) = self.get_item(self.active_index) {
-			let height = active_item
-				.call_method("box", &[sciter::Value::symbol("height")])
-				.expect("row height")
-				.to_int()
-				.expect("int");
-			let tbody = active_item.parent().expect("tbody");
-			let tbody_height = tbody
-				.call_method("box", &[sciter::Value::symbol("height")])
-				.expect("tbody height")
-				.to_int()
-				.expect("int");
-			let items_per_page = (tbody_height / height) as u32;
-			let items_count = tbody.children_count() as u32;
-			let active_index = if self.active_index + items_per_page > items_count {
-				items_count - 1
+		if !self.data_source.borrow().files.is_empty() {
+			let page_size = (self.files_height / self.item_height) as u32;
+			let active_index = self.data_source.borrow().active_index;
+			let max_index = self.data_source.borrow().files.len() as u32 - 1;
+			let active_index = if active_index + page_size <= max_index {
+				active_index + page_size
 			} else {
-				self.active_index + items_per_page
+				max_index
 			};
 			self.set_active_item(active_index);
 		}
 	}
 
 	pub fn toggle_select(&mut self) {
-		if let Some(mut active_item) = self.get_item(self.active_index) {
-			if let Some(_selected) = &active_item.get_attribute("selected") {
-				active_item
-					.remove_attribute("selected")
-					.expect("remove selected");
-			} else {
-				active_item
-					.set_attribute("selected", "true")
-					.expect("set selected");
-			}
+		if let Ok(ref mut data_source) = RefCell::try_borrow_mut(&mut self.data_source) {
+			let active_index = data_source.active_index as usize;
+			let file = data_source.files.get_mut(active_index);
+			if let Some(mut file) = file {
+				file.selected = !file.selected;
+			};
 		}
+		self.vtable
+			.send_event(
+				BEHAVIOR_EVENTS::CHANGE,
+				Some(CLICK_REASON::SYNTHESIZED),
+				None,
+			)
+			.unwrap();
 	}
 
 	fn set_active_item(&mut self, active_index: u32) {
-		if let Some(mut new_item) = self.get_item(active_index) {
-			if let Some(mut old_item) = self.get_item(self.active_index) {
-				old_item.remove_attribute("active").expect("remove active");
-			}
-
-			self.active_index = active_index;
-			new_item
-				.set_attribute("active", "true")
-				.expect("set active");
-			let scapi = sciter::SciterAPI();
-			(scapi.SciterScrollToView)(new_item.as_ptr(), 0);
+		if let Ok(ref mut data_source) = RefCell::try_borrow_mut(&mut self.data_source) {
+			data_source.active_index = active_index;
 		}
+		self.vtable
+			.call_method("onChange", &make_args!(active_index as i32))
+			.unwrap();
 	}
 
 	pub fn activate(&mut self, active: bool) {
@@ -229,12 +196,9 @@ impl Pane {
 	}
 
 	pub fn enter_item(&mut self) {
-		if let Some(active_item) = self.get_item(self.active_index) {
-			self.set_active_item(0);
-			let previous_parent = self.parent.clone();
-			self.parent = active_item
-				.get_attribute("path")
-				.unwrap_or_else(|| "".to_owned());
+		let previous_parent = self.parent.clone();
+		if let Some(new_parent) = self.get_active_path() {
+			self.parent = new_parent;
 			self.update(Some(&previous_parent));
 		}
 	}
@@ -245,6 +209,93 @@ impl Pane {
 		let parent = self.system.get_file(&self.parent, &field_names)?;
 		println!("list files");
 		self.system.list_files(&parent, &field_names)
+	}
+}
+
+pub struct FilesDataSource {
+	active_index: u32,
+	columns: Vec<Column>,
+	files: Vec<File>,
+}
+
+impl FilesDataSource {
+	pub fn new() -> Self {
+		FilesDataSource {
+			active_index: 0,
+			columns: Vec::new(),
+			files: Vec::new(),
+		}
+	}
+}
+
+impl DataSource for FilesDataSource {
+	fn data_source_columns(&self) -> sciter::Value {
+		let columns = &self.columns;
+		let mut data = sciter::Value::array(columns.len());
+		for (index, column) in columns.iter().enumerate() {
+			data.set(index, column.get_name());
+		}
+		data
+	}
+
+	fn data_source_row_count(&self) -> i32 {
+		self.files.len() as i32
+	}
+
+	fn data_source_rows_data(&self, row_index: i32, row_count: i32) -> sciter::Value {
+		let mut rows = sciter::Value::array(row_count as usize);
+		let columns = &self.columns;
+		for index in 0..row_count {
+			let virtual_row_index = row_index + index;
+			if let Some(file) = &self.files.get(virtual_row_index as usize) {
+				let mut row = sciter::Value::map();
+				if virtual_row_index as u32 == self.active_index {
+					row.set_item(sciter::Value::from("active"), sciter::Value::from(true));
+				}
+				if file.selected {
+					row.set_item(sciter::Value::from("selected"), sciter::Value::from(true));
+				}
+
+				let mut cells = sciter::Value::array(columns.len());
+				for (index, value) in (&file.fields).iter().enumerate() {
+					// let column = &columns[index];
+					let mut cell = sciter::Value::map();
+					let text = if let Value::Size { bytes } = value {
+						cell.set_item(
+							sciter::Value::from("textAlign"),
+							sciter::Value::from("right"),
+						);
+						bytes.separated_string()
+					} else {
+						value.to_string()
+					};
+					cell.set_item(sciter::Value::from("text"), sciter::Value::from(text));
+
+					if let Value::Path { icon, .. } = value {
+						match icon {
+							Icon::Local(filename) => {
+								cell.set_item(
+									sciter::Value::from("fileIcon"),
+									sciter::Value::from(filename.to_owned()),
+								);
+							}
+
+							Icon::Shell(filename) => {
+								cell.set_item(
+									sciter::Value::from("shellIcon"),
+									sciter::Value::from(filename.to_owned()),
+								);
+							}
+						}
+					}
+
+					cells.set(index, cell);
+				}
+				row.set_item(sciter::Value::from("cells"), cells);
+				rows.set(index as usize, row);
+			}
+		}
+		rows
 	}
 }
 

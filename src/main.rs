@@ -20,6 +20,7 @@ extern crate regex;
 #[cfg(windows)]
 #[macro_use]
 mod com;
+mod data_source;
 mod repository;
 mod self_update;
 #[cfg(windows)]

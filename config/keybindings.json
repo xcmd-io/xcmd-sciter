@@ -44,6 +44,14 @@
 	"command": "pane.pageDown",
 	"when": "paneFocus"
 },{
+	"key": "home",
+	"command": "pane.moveHome",
+	"when": "paneFocus"
+},{
+	"key": "end",
+	"command": "pane.moveEnd",
+	"when": "paneFocus"
+},{
 	"key": "f3",
 	"command": "pane.viewFile",
 	"when": "paneFocus"

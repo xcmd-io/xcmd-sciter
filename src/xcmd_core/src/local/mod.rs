@@ -14,14 +14,18 @@ impl LocalSystem {
 		field_names: &Rc<Vec<String>>,
 	) -> Result<File, Error> {
 		let path = Path::new(path);
-		let canonicalized_path = path
-			.canonicalize()
-			.unwrap_or_else(|_err| PathBuf::from(path));
 		let full_path =
-			trim_long_path_prefix(&canonicalized_path.to_string_lossy().into_owned()).to_owned();
+			trim_long_path_prefix(&path.to_string_lossy().into_owned()).to_owned();
+		let metadata = path.metadata();
+		let mut size = 0;
+		let mut is_dir = false;
+		if let Ok(metadata) = metadata {
+			size = metadata.len();
+			is_dir = metadata.file_type().is_dir();
+		};
 		let (name, extension) = if let Some(name) = name {
 			(name, "".to_owned())
-		} else if path.is_dir() {
+		} else if is_dir {
 			let filename = path
 				.file_name()
 				.map(|x| x.to_string_lossy().into_owned())
@@ -36,12 +40,6 @@ impl LocalSystem {
 					.map(|x| x.to_string_lossy().into_owned())
 					.unwrap_or_else(|| String::from("")),
 			)
-		};
-		let metadata = path.metadata();
-		let size = if let Ok(metadata) = metadata {
-			metadata.len()
-		} else {
-			0
 		};
 		Ok(File::new(
 			field_names,
@@ -60,11 +58,15 @@ impl LocalSystem {
 
 impl System for LocalSystem {
 	fn get_root(&mut self, field_names: &Rc<Vec<String>>) -> Result<File, Error> {
-		self.get_file(".", field_names)
+		let root = fs::canonicalize(".")
+			.unwrap_or_else(|_err| PathBuf::from("."));
+		self.get_local_file(&root, None, field_names)
 	}
 
 	fn get_file(&mut self, path: &str, field_names: &Rc<Vec<String>>) -> Result<File, Error> {
-		self.get_local_file(Path::new(path), None, field_names)
+		let path = fs::canonicalize(path)
+			.unwrap_or_else(|_err| PathBuf::from(path));
+		self.get_local_file(&path, None, field_names)
 	}
 
 	fn get_filename(&mut self, path: &str) -> String {
