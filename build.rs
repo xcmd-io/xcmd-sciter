@@ -1,17 +1,17 @@
-#[cfg(windows)]
-extern crate windres;
 extern crate brotli;
 extern crate sha2;
+#[cfg(windows)]
+extern crate windres;
 
+use brotli::enc::{BrotliCompress, BrotliEncoderParams};
+use sha2::{Digest, Sha256};
 use std::env;
 use std::fs;
+use std::fs::File;
 use std::io::{self, Write};
 use std::path::Path;
 #[cfg(windows)]
 use windres::Build;
-use std::fs::File;
-use brotli::enc::{BrotliCompress, BrotliEncoderParams};
-use sha2::{Digest, Sha256};
 
 fn prepare_sciter_lib(file: &str) {
 	let lib_path_string = format!("lib/{}", file);

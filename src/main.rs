@@ -15,8 +15,8 @@ extern crate serde_json;
 #[cfg(windows)]
 #[macro_use]
 extern crate winapi;
-extern crate regex;
 extern crate brotli;
+extern crate regex;
 extern crate sha2;
 
 #[cfg(windows)]
@@ -29,46 +29,82 @@ mod self_update;
 mod shortcut;
 mod ui;
 
-use sciter::{RuntimeOptions, Window};
-use std::env;
-use std::fs::{self, File};
-use ui::{Template, WindowEventHandler};
 use brotli::BrotliDecompress;
+use sciter::{RuntimeOptions, Window};
 use sha2::{Digest, Sha256};
-use std::path::Path;
-use std::io;
+use std::env;
 use std::fmt::Write;
+use std::fs::{self, File};
+use std::io;
+use std::path::Path;
+use ui::{Template, WindowEventHandler};
 
-macro_rules! lib_path { () => ("../lib/") }
+macro_rules! lib_path {
+	() => {
+		"../lib/"
+	};
+}
 
 #[cfg(target_os = "windows")]
-macro_rules! sciter_dll { () => ("sciter") }
+macro_rules! sciter_dll {
+	() => {
+		"sciter"
+	};
+}
 
 #[cfg(target_os = "linux")]
-macro_rules! sciter_dll { () => ("libsciter-gtk") }
+macro_rules! sciter_dll {
+	() => {
+		"libsciter-gtk"
+	};
+}
 
 #[cfg(target_os = "macos")]
-macro_rules! sciter_dll { () => ("sciter-osx-64") }
+macro_rules! sciter_dll {
+	() => {
+		"sciter-osx-64"
+	};
+}
 
 #[cfg(target_os = "windows")]
-macro_rules! dll_ext { () => (".dll") }
+macro_rules! dll_ext {
+	() => {
+		".dll"
+	};
+}
 
 #[cfg(target_os = "linux")]
-macro_rules! dll_ext { () => (".so") }
+macro_rules! dll_ext {
+	() => {
+		".so"
+	};
+}
 
 #[cfg(target_os = "macos")]
-macro_rules! dll_ext { () => (".dylib") }
+macro_rules! dll_ext {
+	() => {
+		".dylib"
+	};
+}
 
 fn initialize_sciter_library() {
 	let library = include_bytes!(concat!(lib_path!(), sciter_dll!(), dll_ext!(), ".br"));
 
 	let mut temp = env::temp_dir();
-	let checksum = include_bytes!(concat!(lib_path!(), sciter_dll!(), dll_ext!(), ".br.sha256"));
+	let checksum = include_bytes!(concat!(
+		lib_path!(),
+		sciter_dll!(),
+		dll_ext!(),
+		".br.sha256"
+	));
 	let mut checksum_string = String::new();
 	for &byte in checksum {
 		write!(&mut checksum_string, "{:x}", byte).unwrap();
 	}
-	temp.push(&format!(concat!(sciter_dll!(), "-{}", dll_ext!()), &checksum_string[..16]));
+	temp.push(&format!(
+		concat!(sciter_dll!(), "-{}", dll_ext!()),
+		&checksum_string[..16]
+	));
 
 	if temp.exists() && compute_checksum(&temp).as_slice() != checksum {
 		fs::remove_file(&temp).unwrap();
