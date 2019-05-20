@@ -1,6 +1,3 @@
-use sciter::Element;
-use xcmd_core::api::{File, Value};
-
 pub struct Column {
 	name: String,
 }

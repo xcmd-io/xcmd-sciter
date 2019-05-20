@@ -16,6 +16,8 @@ extern crate serde_json;
 #[macro_use]
 extern crate winapi;
 extern crate regex;
+extern crate brotli;
+extern crate sha2;
 
 #[cfg(windows)]
 #[macro_use]
@@ -28,9 +30,71 @@ mod shortcut;
 mod ui;
 
 use sciter::{RuntimeOptions, Window};
+use std::env;
+use std::fs::{self, File};
 use ui::{Template, WindowEventHandler};
+use brotli::BrotliDecompress;
+use sha2::{Digest, Sha256};
+use std::path::Path;
+use std::io;
+use std::fmt::Write;
+
+macro_rules! lib_path { () => ("../lib/") }
+
+#[cfg(target_os = "windows")]
+macro_rules! sciter_dll { () => ("sciter") }
+
+#[cfg(target_os = "linux")]
+macro_rules! sciter_dll { () => ("libsciter-gtk") }
+
+#[cfg(target_os = "macos")]
+macro_rules! sciter_dll { () => ("sciter-osx-64") }
+
+#[cfg(target_os = "windows")]
+macro_rules! dll_ext { () => (".dll") }
+
+#[cfg(target_os = "linux")]
+macro_rules! dll_ext { () => (".so") }
+
+#[cfg(target_os = "macos")]
+macro_rules! dll_ext { () => (".dylib") }
+
+fn initialize_sciter_library() {
+	let library = include_bytes!(concat!(lib_path!(), sciter_dll!(), dll_ext!(), ".br"));
+
+	let mut temp = env::temp_dir();
+	let checksum = include_bytes!(concat!(lib_path!(), sciter_dll!(), dll_ext!(), ".br.sha256"));
+	let mut checksum_string = String::new();
+	for &byte in checksum {
+		write!(&mut checksum_string, "{:x}", byte).unwrap();
+	}
+	temp.push(&format!(concat!(sciter_dll!(), "-{}", dll_ext!()), &checksum_string[..16]));
+
+	if temp.exists() && compute_checksum(&temp).as_slice() != checksum {
+		fs::remove_file(&temp).unwrap();
+	}
+
+	{
+		let mut file = File::create(&temp).unwrap();
+		BrotliDecompress(&mut library.as_ref(), &mut file).unwrap();
+	}
+
+	sciter::set_library(temp.to_str().unwrap()).unwrap();
+}
+
+use sha2::digest::generic_array::typenum::U32;
+use sha2::digest::generic_array::GenericArray;
+
+fn compute_checksum(path: &Path) -> GenericArray<u8, U32> {
+	let mut sha256 = Sha256::new();
+	let mut input = File::open(&path).unwrap();
+	io::copy(&mut input, &mut sha256).unwrap();
+	sha256.result()
+}
 
 fn main() {
+	initialize_sciter_library();
+
 	sciter::set_options(RuntimeOptions::ScriptFeatures(
 		sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_SYSINFO as u8 | // Enables Sciter.machineName()
 		sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_FILE_IO as u8 | // Enables opening file dialog (view.selectFile())

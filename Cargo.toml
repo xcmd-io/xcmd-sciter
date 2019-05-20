@@ -17,6 +17,12 @@ serde_json = "*"
 url_serde = "*"
 regex = "*"
 toml = "*"
+brotli = "*"
+sha2 = "*"
+
+[build-dependencies]
+brotli = "*"
+sha2 = "*"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "*", features = ["objbase", "combaseapi", "unknwnbase", "winnt", "coml2api", "minwinbase", "impl-default", "shtypes", "guiddef"] }
