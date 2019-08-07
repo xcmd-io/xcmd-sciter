@@ -1,8 +1,8 @@
+use reqwest::Url;
 use semver::Version;
 use std::fs::File;
 use std::io;
 use std::path::Path;
-use url::Url;
 
 #[derive(Deserialize)]
 pub struct Asset {

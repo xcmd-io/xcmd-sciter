@@ -1,4 +1,5 @@
 use repository;
+use reqwest::Url;
 use sciter::types::_HWINDOW;
 use sciter::Element;
 use semver::Version;
@@ -10,7 +11,6 @@ use std::io::ErrorKind;
 use std::os::unix::fs::symlink;
 use std::path::{Path, PathBuf};
 use ui::WindowState;
-use url::Url;
 
 #[cfg(windows)]
 pub fn win_append_extension(filename: &str, extension: &str) -> String {

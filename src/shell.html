@@ -291,24 +291,25 @@ pane.pane-active status {
 
 		class AppWidget : Element {
 			function onKey(event) {
+				stdout.println("key:", event.keyCode);
 				return view.on_key(event.type, event.keyCode, event.altKey, event.ctrlKey, event.shiftKey);
 			}
 		}
 
 		class VTable : Element {
 			function attached() {
-				this.table = Element.create { #table };
-				this.thead = Element.create { #thead };
-				this.tbody = Element.create { #tbody };
+				this.table = Element.create([table: ""]);
+				this.thead = Element.create([thead: ""]);
+				this.tbody = Element.create([tbody: ""]);
 				this.scrollTop = 0;
-				this.scrollbar = Element.create { #widget, type:"vscrollbar" };
+				this.scrollbar = Element.create([widget: { type:"vscrollbar" }]);
 				this.dataSource = new DataSource(this.attributes["datasource"]);
 				this.itemHeight = this.toPixels(this.attributes["item-height"], #height);
 
-				this.insert(this.table);
-				this.insert(this.scrollbar);
-				this.table.insert(this.thead);
-				this.table.insert(this.tbody);
+				this.append(this.table);
+				this.append(this.scrollbar);
+				this.table.append(this.thead);
+				this.table.append(this.tbody);
 				var self = this;
 				this.onChange = function(index) { self.show(index); };
 				var show = function() { self.show(null); }.throttle(.01s);
@@ -342,10 +343,10 @@ pane.pane-active status {
 				var thead = this.thead;
 				var row = new Element(#tr);
 				for (var column in dataSource.columns()) {
-					row.insert(new Element(#th, column));
+					row.append(new Element(#th, column));
 				}
 				this.thead.clear();
-				thead.insert(row);
+				thead.append(row);
 				this.show(null);
 			}
 
@@ -355,7 +356,7 @@ pane.pane-active status {
 					child = text != undefined
 						? new Element(tag, text)
 						: new Element(tag);
-					parent.insert(child);
+					parent.append(child);
 				} else if (text != undefined) {
 					child.text = text;
 				}
@@ -391,8 +392,10 @@ pane.pane-active status {
 						if (this.activeRow && activeIndex !== this.activeIndex) {
 							this.activeRow.attributes["active"] = undefined;
 							this.activeRow = this.tbody[this.activeRow.index + activeIndex - this.activeIndex];
-							this.activeRow.attributes["active"] = "";
-							this.activeIndex = activeIndex;
+							if (this.activeRow) {
+								this.activeRow.attributes["active"] = "";
+								this.activeIndex = activeIndex;
+							}
 							return;
 						}
 					}
@@ -472,5 +475,7 @@ pane.pane-active status {
 				return view.data_source_rows_data(this.name, index, count);
 			}
 		}
+
+		stdout.println("ready");
 	</script>
 </body></html>

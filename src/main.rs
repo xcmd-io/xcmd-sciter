@@ -37,7 +37,7 @@ use std::fmt::Write;
 use std::fs::{self, File};
 use std::io;
 use std::path::Path;
-use ui::{Template, WindowEventHandler};
+use ui::{WindowEventHandler, WindowSciterHandler};
 
 macro_rules! lib_path {
 	() => {
@@ -138,15 +138,10 @@ fn main() {
 	))
 	.unwrap();
 	sciter::set_options(RuntimeOptions::DebugMode(true)).unwrap();
-	let template = Template::new(include_str!("shell.html"));
-	let color_theme = Template::parse_toml(include_str!("../config/light.color-theme.toml"));
-	let rendered_template = template.render(&color_theme);
-	let mut html_with_bom = vec![0xef, 0xbb, 0xbf];
-	html_with_bom.extend_from_slice(rendered_template.as_bytes());
 	let mut window = Window::new();
-	let handler = WindowEventHandler::new();
-	window.event_handler(handler);
-	window.load_html(&html_with_bom, Some("app://shell.html"));
+	window.event_handler(WindowEventHandler::new());
+	window.sciter_handler(WindowSciterHandler::new());
+	window.load_file("app://xcmd/shell.html");
 	window.set_title(&format!("Cross Commander {}", env!("CARGO_PKG_VERSION")));
 	window.run_app();
 }

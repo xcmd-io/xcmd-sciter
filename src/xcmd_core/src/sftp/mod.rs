@@ -1,29 +1,24 @@
 use crate::api::{Error, File, Icon, System, Value};
-use owning_ref::OwningHandle;
 use ssh2::{FileStat, Session, Sftp};
 use std::net::TcpStream;
 use std::path::Path;
 use std::rc::Rc;
 
 pub struct SftpSystem {
-	_tcp: TcpStream,
-	sftp: OwningHandle<Box<Session>, Box<Sftp<'static>>>,
+	sftp: Sftp,
 }
 
 impl SftpSystem {
 	pub fn new() -> SftpSystem {
 		let mut session = Session::new().unwrap();
 		let tcp = TcpStream::connect("hostname:port").unwrap();
-		session.handshake(&tcp).unwrap();
+		session.set_tcp_stream(tcp);
+		session.handshake().unwrap();
 		session.userauth_password("username", "password").unwrap();
 		assert!(session.authenticated());
-		let oref = OwningHandle::new_with_fn(Box::new(session), unsafe {
-			|x| Box::new((*x).sftp().unwrap())
-		});
 
 		SftpSystem {
-			_tcp: tcp,
-			sftp: oref,
+			sftp: session.sftp().unwrap(),
 		}
 	}
 
