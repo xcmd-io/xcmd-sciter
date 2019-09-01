@@ -6,7 +6,6 @@ extern crate windres;
 use brotli::enc::{BrotliCompress, BrotliEncoderParams};
 use sha2::{Digest, Sha256};
 use std::env;
-use std::fs;
 use std::fs::File;
 use std::io::{self, Write};
 use std::path::Path;
