@@ -7,7 +7,7 @@ mod wchar;
 pub use self::com_library::ComLibrary;
 pub use self::com_ptr::ComPtr;
 pub use self::persist_file::IPersistFile;
-pub use self::shell_link::{CLSID_ShellLink, IShellLinkW, SLGP_SHORTPATH};
+pub use self::shell_link::{IShellLinkW, CLSID_SHELL_LINK, SLGP_SHORTPATH};
 pub use self::wchar::{from_wchar, to_wchar};
 
 #[macro_export]

@@ -7,92 +7,92 @@ use winapi::um::winnt::{HRESULT, LPCWSTR, LPWSTR};
 
 pub const SLGP_SHORTPATH: DWORD = 0x1;
 
-DEFINE_GUID! {CLSID_ShellLink, 0x0002_1401, 0x0000, 0x0000, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}
+DEFINE_GUID! {CLSID_SHELL_LINK, 0x0002_1401, 0x0000, 0x0000, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}
 
 RIDL! {#[uuid(0x0002_14f9, 0x0000, 0x0000, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46)]
 interface IShellLinkW(IShellLinkWVtbl): IUnknown(IUnknownVtbl) {
-	fn GetPath(
-		pszFile: LPWSTR,
+	fn get_path(
+		psz_file: LPWSTR,
 		cch: i32,
 		pfd: *mut WIN32_FIND_DATAW,
-		fFlags: DWORD,
+		f_flags: DWORD,
 	) -> HRESULT,
 
-	fn GetIDList(
+	fn get_id_list(
 		ppidl: *mut PIDLIST_ABSOLUTE,
 	) -> HRESULT,
 
-	fn SetIDList(
+	fn set_id_list(
 		pidl: PIDLIST_ABSOLUTE,
 	) -> HRESULT,
 
-	fn GetDescription(
-		pszName: LPWSTR,
+	fn get_description(
+		psz_name: LPWSTR,
 		cch: i32,
 	) -> HRESULT,
 
-	fn SetDescription(
-		pszName: LPCWSTR,
+	fn set_description(
+		psz_name: LPCWSTR,
 	) -> HRESULT,
 
-	fn GetWorkingDirectory(
-		pszDir: LPWSTR,
+	fn get_working_directory(
+		psz_dir: LPWSTR,
 		cch: i32,
 	) -> HRESULT,
 
-	fn SetWorkingDirectory(
-		pszDir: LPCWSTR,
+	fn set_working_directory(
+		psz_dir: LPCWSTR,
 	) -> HRESULT,
 
-	fn GetArguments(
-		pszArgs: LPWSTR,
+	fn get_arguments(
+		psz_args: LPWSTR,
 		cch: i32,
 	) -> HRESULT,
 
-	fn SetArguments(
-		pszArgs: LPCWSTR,
+	fn set_arguments(
+		psz_args: LPCWSTR,
 	) -> HRESULT,
 
-	fn GetHotkey(
-		pwHotkey: *mut WORD,
+	fn get_hotkey(
+		pw_hotkey: *mut WORD,
 		cch: i32,
 	) -> HRESULT,
 
-	fn SetHotkey(
-		wHotkey: WORD,
+	fn set_hotkey(
+		w_hotkey: WORD,
 	) -> HRESULT,
 
-	fn GetShowCmd(
-		piShowCmd: *mut i32,
+	fn get_show_cmd(
+		pi_show_cmd: *mut i32,
 		cch: i32,
 	) -> HRESULT,
 
-	fn SetShowCmd(
-		iShowCmd: i32,
+	fn set_show_cmd(
+		i_show_cmd: i32,
 	) -> HRESULT,
 
-	fn GetIconLocation(
-		pszIconPath: LPWSTR,
+	fn get_icon_location(
+		psz_icon_path: LPWSTR,
 		cch: i32,
-		piIcon: *mut i32,
+		pi_icon: *mut i32,
 	) -> HRESULT,
 
-	fn SetIconLocation(
-		pszIconPath: LPCWSTR,
-		iIcon: i32,
+	fn set_icon_location(
+		psz_icon_path: LPCWSTR,
+		i_icon: i32,
 	) -> HRESULT,
 
-	fn SetRelativePath(
-		pszPathRel: LPCWSTR,
-		dwReserved: DWORD,
+	fn set_relative_path(
+		psz_path_rel: LPCWSTR,
+		dw_reserved: DWORD,
 	) -> HRESULT,
 
-	fn Resolve(
+	fn resolve(
 		hwnd: *const _HWINDOW,
-		fFlags: DWORD,
+		f_flags: DWORD,
 	) -> HRESULT,
 
-	fn SetPath(
-		pszFile: LPCWSTR,
+	fn set_path(
+		psz_file: LPCWSTR,
 	) -> HRESULT,
 }}

@@ -12,7 +12,7 @@ use xcmd_core::api::System;
 use xcmd_core::local::LocalSystem;
 use xcmd_core::sftp::SftpSystem;
 
-type Callback = Box<(Fn(&mut WindowState, &Element) -> ()) + 'static>;
+type Callback = Box<dyn (Fn(&mut WindowState, &Element) -> ()) + 'static>;
 
 pub fn mk_callback<F>(f: F) -> Callback
 where
@@ -33,7 +33,7 @@ pub struct WindowState {
 	left_pane: Option<Pane>,
 	right_pane: Option<Pane>,
 	palette: Option<Palette>,
-	data_sources: HashMap<String, Rc<RefCell<DataSource>>>,
+	data_sources: HashMap<String, Rc<RefCell<dyn DataSource>>>,
 }
 
 impl WindowState {
@@ -144,14 +144,14 @@ impl WindowEventHandler {
 		let left_data_source = Rc::clone(&left_pane.data_source);
 		self.state.data_sources.insert(
 			"left-pane".to_owned(),
-			left_data_source as Rc<RefCell<DataSource>>,
+			left_data_source as Rc<RefCell<dyn DataSource>>,
 		);
 
 		let right_pane = self.create_pane(&mut find_first(&root, "#right-pane"), 0);
 		let right_data_source = Rc::clone(&right_pane.data_source);
 		self.state.data_sources.insert(
 			"right-pane".to_owned(),
-			right_data_source as Rc<RefCell<DataSource>>,
+			right_data_source as Rc<RefCell<dyn DataSource>>,
 		);
 
 		self.state.left_pane = Some(left_pane);
@@ -287,10 +287,10 @@ impl WindowEventHandler {
 		ctrl_key: bool,
 		shift_key: bool,
 	) -> bool {
-		// println!(
-		// 	"on_key: type={}, keyCode={}, alt={}, ctrl={}, shift={}",
-		// 	event_type, key_code, alt_key, ctrl_key, shift_key
-		// );
+		println!(
+			"on_key: type={}, keyCode={}, alt={}, ctrl={}, shift={}",
+			event_type, key_code, alt_key, ctrl_key, shift_key
+		);
 		if event_type == BEHAVIOR_EVENTS::BUTTON_CLICK as i32 {
 			if let Some(key_index) = self.key_map.get(&key_code) {
 				let key = if alt_key { ALT } else { 0 }
@@ -354,13 +354,12 @@ impl WindowEventHandler {
 	}
 
 	fn create_pane(&self, element: &mut Element, index: u8) -> Pane {
-		let system: Box<System> = if index < 2 {
+		let system: Box<dyn System> = if index < 2 {
 			Box::new(LocalSystem::default())
 		} else {
 			Box::new(SftpSystem::new())
 		};
-		let mut pane = Pane::new(element, index == self.state.active_pane, system);
-		pane
+		Pane::new(element, index == self.state.active_pane, system)
 	}
 }
 

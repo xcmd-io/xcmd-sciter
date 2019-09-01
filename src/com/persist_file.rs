@@ -6,31 +6,31 @@ use winapi::um::winnt::{HRESULT, LPCWSTR};
 
 RIDL! {#[uuid(0x0000_010c, 0x0000, 0x0000, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46)]
 interface IPersist(IPersistVtbl): IUnknown(IUnknownVtbl) {
-	fn GetClassID(
-		pClassID: *mut CLSID,
+	fn get_class_id(
+		p_class_id: *mut CLSID,
 	) -> HRESULT,
 }}
 
 RIDL! {#[uuid(0x0000_010b, 0x0000, 0x0000, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46)]
 interface IPersistFile(IPersistFileVtbl): IPersist(IPersistVtbl) {
-	fn IsDirty(
+	fn is_dirty(
 	) -> HRESULT,
 
-	fn Load(
-		pszFileName: LPCOLESTR,
-		dwMode: DWORD,
+	fn load(
+		psz_file_name: LPCOLESTR,
+		dw_mode: DWORD,
 	) -> HRESULT,
 
-	fn Save(
-		wszLinkFile: LPCWSTR,
-		fRemember: BOOL,
+	fn save(
+		wsz_link_file: LPCWSTR,
+		f_remember: BOOL,
 	) -> HRESULT,
 
-	fn SaveCompleted(
-		pszFileName: LPCOLESTR,
+	fn save_completed(
+		psz_file_name: LPCOLESTR,
 	) -> HRESULT,
 
-	fn GetCurFile(
-		ppszFileName: LPOLESTR,
+	fn get_cur_file(
+		ppsz_file_name: LPOLESTR,
 	) -> HRESULT,
 }}

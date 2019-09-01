@@ -9,7 +9,7 @@ use xcmd_core::api::{Error, File, Icon, System, Value};
 
 pub struct Pane {
 	active: bool,
-	pub system: Box<System>,
+	pub system: Box<dyn System>,
 	field_names: Vec<String>,
 	pub data_source: Rc<RefCell<FilesDataSource>>,
 	parent: String,
@@ -22,7 +22,7 @@ pub struct Pane {
 }
 
 impl Pane {
-	pub fn new(element: &mut Element, active: bool, mut system: Box<System>) -> Pane {
+	pub fn new(element: &mut Element, active: bool, mut system: Box<dyn System>) -> Pane {
 		let mut field_names: Vec<String> = Vec::new();
 		field_names.push("path".to_owned());
 		field_names.push("extension".to_owned());
