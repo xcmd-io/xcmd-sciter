@@ -88,6 +88,7 @@ macro_rules! dll_ext {
 }
 
 fn initialize_sciter_library() {
+	println!("initializing sciter library");
 	let library = include_bytes!(concat!(lib_path!(), sciter_dll!(), dll_ext!(), ".br"));
 
 	let mut temp = env::temp_dir();
@@ -97,6 +98,7 @@ fn initialize_sciter_library() {
 		dll_ext!(),
 		".br.sha256"
 	));
+	println!("calculating checksum");
 	let mut checksum_string = String::new();
 	for &byte in checksum {
 		write!(&mut checksum_string, "{:x}", byte).unwrap();
@@ -110,12 +112,14 @@ fn initialize_sciter_library() {
 		fs::remove_file(&temp).unwrap();
 	}
 
-	{
+	if !temp.exists() {
+		println!("decompressing sciter library");
 		let mut file = File::create(&temp).unwrap();
 		BrotliDecompress(&mut library.as_ref(), &mut file).unwrap();
 	}
 
 	sciter::set_library(temp.to_str().unwrap()).unwrap();
+	println!("initialized sciter library");
 }
 
 use sha2::digest::generic_array::typenum::U32;
@@ -134,14 +138,15 @@ fn main() {
 	sciter::set_options(RuntimeOptions::ScriptFeatures(
 		sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_SYSINFO as u8 | // Enables Sciter.machineName()
 		sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_FILE_IO as u8 | // Enables opening file dialog (view.selectFile())
-		sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_SOCKET_IO as u8, // Enables connecting to the inspector via Ctrl+Shift+I
+		sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_SOCKET_IO as u8 | // Enables connecting to the inspector via Ctrl+Shift+I
+		sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_EVAL as u8, // Enables eval
 	))
 	.unwrap();
 	sciter::set_options(RuntimeOptions::DebugMode(true)).unwrap();
 	let mut window = Window::new();
 	window.event_handler(WindowEventHandler::new());
 	window.sciter_handler(WindowSciterHandler::new());
-	window.load_file("app://xcmd/shell.html");
+	window.load_file("app://xcmd/shell.sciter.html");
 	window.set_title(&format!("Cross Commander {}", env!("CARGO_PKG_VERSION")));
 	window.run_app();
 }

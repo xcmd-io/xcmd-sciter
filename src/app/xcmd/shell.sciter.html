@@ -1,0 +1,33 @@
+<html tabindex="0" window-icon="app://xcmd/favicon.png">
+	<head>
+		<title>Cross Commander</title>
+		<style src="style.sciter.css"/>
+		<script type="text/tiscript" src="script.tis"/>
+	</head>
+	<body>
+		<panes>
+			<pane#left-pane>
+				<tabs>
+					<tab>&nbsp;</tab>
+				</tabs>
+				<input value=""/>
+				<vtable datasource="left-pane" item-height="18dip" onresize="view.on_resize_files(this.tbody.box(#height), this.itemHeight)"/>
+				<status>&nbsp;</status>
+			</pane>
+			<pane#right-pane>
+				<tabs>
+					<tab>&nbsp;</tab>
+				</tabs>
+				<input value=""/>
+				<vtable datasource="right-pane" item-height="18dip" onresize="view.on_resize_files(this.tbody.box(#height), this.itemHeight)"/>
+				<status>&nbsp;</status>
+			</pane>
+		</panes>
+		<palette#palette>
+			<input value="&gt;"/>
+			<table>
+				<tbody/>
+			</table>
+		</palette>
+	</body>
+</html>

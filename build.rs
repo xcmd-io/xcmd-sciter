@@ -6,7 +6,8 @@ extern crate windres;
 use brotli::enc::{BrotliCompress, BrotliEncoderParams};
 use sha2::{Digest, Sha256};
 use std::env;
-use std::fs::File;
+use std::error::Error;
+use std::fs::{self, DirEntry, File};
 use std::io::{self, Write};
 use std::path::Path;
 #[cfg(windows)]
@@ -40,6 +41,54 @@ fn prepare_sciter_lib(file: &str) {
 	}
 }
 
+fn visit_dirs(
+	dir: &Path,
+	cb: &dyn Fn(&DirEntry) -> Result<(), Box<dyn Error>>,
+) -> Result<(), Box<dyn Error>> {
+	if dir.is_dir() {
+		for entry in fs::read_dir(dir)? {
+			let entry = entry?;
+			let path = entry.path();
+			if path.is_dir() {
+				visit_dirs(&path, cb)?;
+			} else {
+				cb(&entry)?;
+			}
+		}
+	}
+	Ok(())
+}
+
+fn prepare_sciter_app_files() -> Result<(), Box<dyn Error>> {
+	let app_data_dir = "src/app/";
+	let app_data_path = Path::new(app_data_dir);
+	let out_dir = env::var("OUT_DIR")?;
+	let output_path = Path::new(&out_dir).join("$app_data.rs");
+	let mut output = File::create(&output_path)?;
+
+	writeln!(&mut output, r#"["#,)?;
+
+	visit_dirs(app_data_path, &|dir_entry: &DirEntry| {
+		if dir_entry.file_type()?.is_file() {
+			let dir_entry_path = dir_entry.path();
+			writeln!(
+				&output,
+				r#"("{name}", include_bytes!("{path}")),"#,
+				name = dir_entry_path.to_string_lossy()[app_data_dir.len()..].replace("\\", "/"),
+				path = dir_entry_path
+					.canonicalize()?
+					.to_string_lossy()
+					.replace("\\", "\\\\")
+			)?;
+		}
+		Ok(())
+	})?;
+
+	writeln!(&mut output, r#"];"#,)?;
+
+	Ok(())
+}
+
 fn main() {
 	env::set_var("INCLUDE", "src/include");
 
@@ -54,4 +103,6 @@ fn main() {
 
 	#[cfg(target_os = "macos")]
 	prepare_sciter_lib("sciter-osx-64.dylib");
+
+	prepare_sciter_app_files().unwrap();
 }

@@ -1,0 +1,227 @@
+html {
+	font-family: 'Segoe UI', sans-serif;
+	font-size: 10pt;
+	width: 100%;
+	background: var('window-background');
+	color: var('window-foreground');
+}
+
+body {
+	margin: 0;
+}
+
+vtable {
+	width: *;
+	height: *;
+	style-set: "vtable";
+}
+
+@set vtable {
+	:root {
+		prototype: VTable;
+		display: block;
+		flow: horizontal;
+		overflow: hidden;
+	}
+
+	:root>table {
+		width: *;
+		height: *;
+		overflow: hidden;
+		background: var('list-background');
+		border-collapse: collapse;
+		margin: 1dip 0;
+		padding: 0;
+	}
+
+	:root>table>thead {
+		background: var('list-headerBackground');
+		color: var('list-headerForeground');
+	}
+
+	:root>table>tbody {
+		overflow: hidden-scroll;
+	}
+
+	:root>table>thead>tr>th,
+	:root>table>tbody>tr>td {
+		overflow-x: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		width: 60dip;
+	}
+
+	:root>table>thead>tr>th:first-child,
+	:root>table>tbody>tr>td:first-child {
+		width: *;
+		min-width: 60dip;
+	}
+}
+
+panes {
+	position: absolute;
+	display: block;
+	width: 100%;
+	height: 100%;
+	flow: horizontal;
+}
+
+pane {
+	display: block;
+	width: *;
+	height: *;
+	flow: vertical;
+	padding: 1dip;
+}
+
+th {
+	font-weight: normal;
+	text-align: left;
+	padding: 1dip;
+	border: .5dip solid var('list-headerBorder');
+}
+
+input {
+	font-size: 100%;
+	width: *;
+	color: var('input-foreground');
+	background: var('input-background');
+	padding: 1dip;
+	margin: 1dip 0;
+	border: .5dip solid var('input-border');
+}
+
+input:focus {
+	border-color: var('input-focusBorder');
+	color: var('input-focusForeground');
+	background: var('input-focusBackground');
+}
+
+td[behavior=file-icon] {
+	padding-left: 17dip;
+	behavior: file-icon;
+	white-space: nowrap;
+	foreground-repeat: no-repeat;
+	foreground-position: 0 50%;
+}
+
+td[behavior=shell-icon] {
+	padding-left: 17dip;
+	behavior: shell-icon;
+	foreground-repeat: no-repeat;
+	foreground-position: 0 50%;
+}
+
+tbody tr[selected] {
+	color: var('inactiveList-selectedForeground');
+	background: var('inactiveList-selectedBackground');
+}
+
+tbody tr[active] {
+	color: var('inactiveList-activeForeground');
+	background: var('inactiveList-activeBackground');
+}
+
+tbody tr[selected][active] {
+	color: var('inactiveList-selectedActiveForeground');
+	background: var('inactiveList-selectedActiveBackground');
+}
+
+pane.pane-active tbody tr[selected] {
+	color: var('list-selectedForeground');
+	background: var('list-selectedBackground');
+}
+
+pane.pane-active tbody tr[active] {
+	color: var('list-activeForeground');
+	background: var('list-activeBackground');
+}
+
+pane.pane-active tbody tr[selected][active] {
+	color: var('list-selectedActiveForeground');
+	background: var('list-selectedActiveBackground');
+}
+
+td {
+	padding: 0 1dip;
+}
+
+tabs {
+	display: block;
+	border-bottom: 2dip solid var('inactiveTab-background');
+	margin-top: 1.5dip;
+}
+
+tab {
+	display: inline-block;
+	color: var('inactiveTab-foreground');
+	background: var('inactiveTab-background');
+	padding: 1dip 2dip;
+	min-width: 100dip;
+}
+
+pane.pane-active tabs {
+	border-bottom-color: var('tab-background');
+}
+
+pane.pane-active tab {
+	color: var('tab-foreground');
+	background-color: var('tab-background');
+}
+
+palette {
+	display: none;
+	position: absolute;
+	top: 46dip;
+	margin: 0 auto;
+	width: 80%;
+	max-width: 600dip;
+	max-height: 350dip;
+	background: var('palette-background');
+	color: var('palette-foreground');
+	box-shadow: var('palette-border') 0 5dip 8dip;
+	flow: vertical;
+}
+
+palette[active] {
+	display: block;
+}
+
+palette>input {
+	margin: 5dip;
+}
+
+palette>table {
+	width: *;
+	height: *;
+	background: var('palette-background');
+	color: var('palette-foreground');
+	border-collapse: collapse;
+	padding: 0;
+}
+
+palette>table>tbody {
+	height: 100%;
+	max-height: 300dip;
+	overflow: auto;
+}
+
+palette>table>tbody>tr>td {
+	padding: 1dip 7dip;
+}
+
+status {
+	display: block;
+	padding: 1dip;
+	color: var('inactiveTab-foreground');
+	background-color: var('inactiveTab-background');
+}
+
+pane.pane-active status {
+	color: var('tab-foreground');
+	background-color: var('tab-background');
+}
+
+.align-right {
+	text-align: right;
+}

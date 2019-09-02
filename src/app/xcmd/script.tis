@@ -1,0 +1,216 @@
+function Function.throttle(milliseconds, options = {}) {
+	var context, args, result;
+	var running = false;
+	var previous = 0;
+	var func = this;
+	milliseconds = milliseconds.toInteger();
+	function later() {
+		previous = options.leading === false ? 0 : Date.ticks();
+		running = false;
+		result = func.apply(context, args);
+	};
+	return function(arguments..) {
+		var now = Date.ticks();
+		if (!previous && options.leading === false) {
+			previous = now;
+		}
+		var remaining = milliseconds - (now - previous);
+		context = this;
+		args = arguments;
+		if (remaining <= 0) {
+			self.timer(0, later, true);
+			running = false;
+			previous = now;
+			result = func.apply(context, args);
+		} else if (!running && options.trailing !== false) {
+			running = true;
+			self.timer(remaining, later, true);
+		}
+		return result;
+	};
+}
+
+class VTable : Element {
+	function attached() {
+		this.table = Element.create([table: ""]);
+		this.thead = Element.create([thead: ""]);
+		this.tbody = Element.create([tbody: ""]);
+		this.scrollTop = 0;
+		this.scrollbar = Element.create([widget: { type:"vscrollbar" }]);
+		this.dataSource = new DataSource(this.attributes["datasource"]);
+		this.itemHeight = this.toPixels(this.attributes["item-height"], #height);
+
+		this.append(this.table);
+		this.append(this.scrollbar);
+		this.table.append(this.thead);
+		this.table.append(this.tbody);
+		var self = this;
+		this.onChange = function(index) { self.show(index); };
+		var show = function() { self.show(null); }.throttle(.01s);
+		this.scrollbar.onScroll = function(evt) {
+			switch (evt.type) {
+				case Event.SCROLL_POS:
+					self.scrollTop = evt.scrollPos;
+					break;
+			}
+			var rowCount = self.dataSource.rowCount();
+			var height = self.tbody.box(#height);
+			var itemHeight = self.itemHeight;
+			self.scrollbar.setValues(self.scrollTop, 0, rowCount * itemHeight, height, 1);
+			show();
+		};
+		this.tbody.onSize = function() {
+			if (self.attributes["onresize"]) {
+				eval.call(self, self.attributes["onresize"]);
+			}
+			show();
+		};
+
+		this.bind(this.dataSource);
+
+		this << event change(evt) {
+			this.bind(this.dataSource);
+		}
+	}
+
+	function bind(dataSource) {
+		var thead = this.thead;
+		var row = new Element(#tr);
+		for (var column in dataSource.columns()) {
+			row.append(new Element(#th, column));
+		}
+		this.thead.clear();
+		thead.append(row);
+		this.show(null);
+	}
+
+	function getOrCreateChild(parent, index, tag, text) {
+		var child = parent[index];
+		if (!child) {
+			child = text != undefined
+				? new Element(tag, text)
+				: new Element(tag);
+			parent.append(child);
+		} else if (text != undefined) {
+			child.text = text;
+		}
+		return child;
+	}
+
+	function removeChildren(parent, startIndex) {
+		var child;
+		while (child = parent[startIndex]) {
+			child.remove();
+		}
+	}
+
+	function show(activeIndex) {
+		var dataSource = this.dataSource;
+		var rowCount = dataSource.rowCount();
+		var tbody = this.tbody;
+		var height = tbody.box(#height);
+		var scrollTop = this.scrollTop;
+		var itemHeight = this.itemHeight;
+		var visibleRows = (Math.ceil(height / itemHeight) + 1).toInteger();
+
+		if (activeIndex !== null) {
+			if (scrollTop < (activeIndex + 1) * itemHeight - height) {
+				scrollTop = (activeIndex + 1) * itemHeight - height;
+			}
+			if (scrollTop > activeIndex * itemHeight) {
+				scrollTop = activeIndex * itemHeight;
+			}
+			if (this.scrollTop != scrollTop) {
+				this.scrollTop = scrollTop;
+			} else {
+				if (this.activeRow && activeIndex !== this.activeIndex) {
+					this.activeRow.attributes["active"] = undefined;
+					this.activeRow = this.tbody[this.activeRow.index + activeIndex - this.activeIndex];
+					if (this.activeRow) {
+						this.activeRow.attributes["active"] = "";
+						this.activeIndex = activeIndex;
+					}
+					return;
+				}
+			}
+		}
+
+		var rowIndex = 0;
+		var virtualRowIndex = (Math.round((scrollTop - scrollTop % itemHeight) / itemHeight)).toInteger();
+		var rowsData = dataSource.rowsData(virtualRowIndex, visibleRows);
+
+		this.scrollbar.setValues(scrollTop, 0, rowCount * itemHeight, height, 1);
+		this.activeRow = undefined;
+		this.activeIndex = null;
+
+		while (rowIndex < visibleRows) {
+			var rowData = rowsData[rowIndex]
+			if (!rowData) {
+				break;
+			}
+			var row = getOrCreateChild(tbody, rowIndex, #tr, undefined);
+
+			row.attributes["selected"] = rowData.selected ? "" : undefined;
+			row.attributes["active"] = rowData.active ? "" : undefined;
+
+			if (rowData.active) {
+				this.activeRow = row;
+				this.activeIndex = virtualRowIndex;
+			}
+
+			var cellIndex = 0;
+			for (var cellData in rowData.cells) {
+				var cell = getOrCreateChild(row, cellIndex, #td, cellData ? cellData.text : "");
+				var behavior = undefined;
+				var filename = undefined;
+				var textAlign = undefined;
+				if (cellData) {
+					if (cellData.fileIcon) {
+						behavior = "file-icon";
+						filename = cellData.fileIcon;
+					} else if (cellData.shellIcon) {
+						behavior = "shell-icon";
+						filename = cellData.shellIcon;
+					}
+					textAlign = cellData.textAlign;
+				}
+				cell.attributes["behavior"] = behavior;
+				cell.attributes["filename"] = filename;
+				cell.style#text-align = textAlign;
+				cell.style#height = itemHeight;
+				++cellIndex;
+			}
+			removeChildren(row, cellIndex);
+			row.update();
+			++rowIndex;
+			++virtualRowIndex;
+		}
+
+		removeChildren(tbody, rowIndex);
+
+		this.tbody.scrollTo(0, scrollTop % itemHeight, false, true);
+	}
+}
+
+class DataSource {
+	function this(name) {
+		this.name = name;
+	}
+
+	function columns() {
+		return view.data_source_columns(this.name);
+	}
+
+	function rowCount() {
+		return view.data_source_row_count(this.name);
+	}
+
+	function rowsData(index, count) {
+		return view.data_source_rows_data(this.name, index, count);
+	}
+}
+
+view.root.onKey = function(evt) {
+	view.log("keydown");
+	return view.on_key(evt.type, evt.keyCode, evt.altKey, evt.ctrlKey, evt.shiftKey);
+};

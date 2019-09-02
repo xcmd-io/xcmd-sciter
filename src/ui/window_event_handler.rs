@@ -279,6 +279,10 @@ impl WindowEventHandler {
 		}
 	}
 
+	fn log(&mut self, message: String) {
+		println!("log: {}", message);
+	}
+
 	fn on_key(
 		&mut self,
 		event_type: i32,
@@ -375,6 +379,7 @@ impl EventHandler for WindowEventHandler {
 
 	#[allow(clippy::eval_order_dependence)]
 	dispatch_script_call! {
+		fn log(String);
 		fn on_key(i32, i32, bool, bool, bool);
 		fn data_source_columns(String);
 		fn data_source_row_count(String);
