@@ -181,7 +181,6 @@ class VTable : Element {
 				++cellIndex;
 			}
 			removeChildren(row, cellIndex);
-			row.update();
 			++rowIndex;
 			++virtualRowIndex;
 		}

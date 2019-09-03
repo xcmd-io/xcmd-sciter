@@ -33,7 +33,7 @@ impl HostHandler for WindowSciterHandler {
 							&html_with_bom,
 							None, //Some(data.request_id),
 						);
-						return Some(LOAD_RESULT::LOAD_DELAYED);
+						return Some(LOAD_RESULT::LOAD_DEFAULT);
 					} else {
 						self.data_ready(
 							data.hwnd,
@@ -41,7 +41,7 @@ impl HostHandler for WindowSciterHandler {
 							bytes,
 							None, //Some(data.request_id),
 						);
-						return Some(LOAD_RESULT::LOAD_DELAYED);
+						return Some(LOAD_RESULT::LOAD_DEFAULT);
 					}
 				}
 			}

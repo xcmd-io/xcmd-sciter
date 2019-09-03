@@ -301,17 +301,14 @@ impl WindowEventHandler {
 					| if ctrl_key { CTRL } else { 0 }
 					| if shift_key { SHIFT } else { 0 }
 					| key_index;
-				let mut key_command = None;
-				if let Some(key_handler) = self.key_handlers.get(&key) {
-					if let Some(command) = self.commands.get(key_handler) {
-						key_command = Some(command);
-					}
+				let key_command = if let Some(key_handler) = self.key_handlers.get(&key) {
+					self.commands.get(key_handler)
+				} else {
+					None
 				};
 				let mut state = &mut self.state;
-				if let Some(command) = key_command {
-					if let Some(root) = &self.root {
-						command(&mut state, &root);
-					}
+				if let (Some(command), Some(root)) = (key_command, &self.root) {
+					command(&mut state, &root);
 				}
 				true
 			} else {
