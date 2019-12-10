@@ -227,6 +227,10 @@ impl WindowEventHandler {
 			"palette.hide",
 			mk_callback(|state: &mut WindowState, _root: &Element| hide_palette(state)),
 		);
+		self.register_command(
+			"pane.copyFile",
+			mk_callback(|state: &mut WindowState, root: &Element| copy_file(state, root)),
+		);
 
 		self.initialize_key_map();
 
@@ -490,6 +494,15 @@ fn edit_file(state: &mut WindowState) {
 	if let Some(pane) = state.get_active_pane() {
 		if let Some(path) = pane.get_active_path() {
 			Command::new("notepad").arg(path).output().expect("notepad");
+		}
+	}
+}
+
+fn copy_file(state: &mut WindowState, root: &Element) {
+	if let Some(pane) = state.get_active_pane() {
+		if let Some(path) = pane.get_active_path() {
+			// root.eval_script("view.dialog({ url: \"app://xcmd/copy.sciter.html\", width: this.toPixels(100dip), height: this.toPixels(100dip) })").unwrap();
+			root.eval_script("view.dialog(\"app://xcmd/copy.sciter.html\")").unwrap();
 		}
 	}
 }

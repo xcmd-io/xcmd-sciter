@@ -60,6 +60,10 @@
 	"command": "pane.editFile",
 	"when": "paneFocus"
 },{
+	"key": "f5",
+	"command": "pane.copyFile",
+	"when": "paneFocus"
+},{
 	"key": "ctrl+p",
 	"command": "palette.show",
 	"when": "paneFocus"

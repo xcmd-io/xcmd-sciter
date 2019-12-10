@@ -225,3 +225,15 @@ pane.pane-active status {
 .align-right {
 	text-align: right;
 }
+
+button {
+	color: var('inactiveTab-foreground');
+	background-color: var('inactiveTab-background');
+	background-image: none;
+	min-width: 100dip;
+}
+
+button[active] {
+	color: var('tab-foreground');
+	background-color: var('tab-background');
+}
