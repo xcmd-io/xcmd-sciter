@@ -1,8 +1,3 @@
-extern crate brotli;
-extern crate sha2;
-#[cfg(windows)]
-extern crate windres;
-
 use brotli::enc::{BrotliCompress, BrotliEncoderParams};
 use sha2::{Digest, Sha256};
 use std::env;

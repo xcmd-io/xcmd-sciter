@@ -3,6 +3,7 @@ name = "xcmd"
 version = "0.1.1"
 authors = ["xcmd.io <developer@xcmd.io>"]
 autobins = false
+edition = "2018"
 
 [dependencies]
 sciter-rs = "*"

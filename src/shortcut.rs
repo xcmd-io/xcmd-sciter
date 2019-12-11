@@ -1,4 +1,7 @@
-use com::{self, ComLibrary, ComPtr, IPersistFile, IShellLinkW, CLSID_SHELL_LINK, SLGP_SHORTPATH};
+#[cfg(windows)]
+use crate::com::{
+	self, ComLibrary, ComPtr, IPersistFile, IShellLinkW, CLSID_SHELL_LINK, SLGP_SHORTPATH,
+};
 use sciter::types::_HWINDOW;
 use std::path::{Path, PathBuf};
 use std::ptr;

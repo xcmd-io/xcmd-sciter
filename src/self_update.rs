@@ -1,16 +1,16 @@
-use repository;
+use crate::repository;
+#[cfg(windows)]
+use crate::shortcut;
+use crate::ui::WindowState;
 use reqwest::Url;
 use sciter::types::_HWINDOW;
 use sciter::Element;
 use semver::Version;
-#[cfg(windows)]
-use shortcut;
 use std::fs;
 use std::io::ErrorKind;
 #[cfg(unix)]
 use std::os::unix::fs::symlink;
 use std::path::{Path, PathBuf};
-use ui::WindowState;
 
 #[cfg(windows)]
 pub fn win_append_extension(filename: &str, extension: &str) -> String {

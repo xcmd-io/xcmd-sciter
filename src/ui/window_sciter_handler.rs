@@ -1,5 +1,5 @@
+use crate::ui::Template;
 use sciter::host::{HostHandler, LOAD_RESULT, SCN_LOAD_DATA};
-use ui::Template;
 
 const APP_DATA: &[(&str, &[u8])] = &include!(concat!(env!("OUT_DIR"), "/$app_data.rs"));
 

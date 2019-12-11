@@ -4,14 +4,14 @@ use std::fs::File;
 use std::io;
 use std::path::Path;
 
-#[derive(Deserialize)]
+#[derive(serde_derive::Deserialize)]
 pub struct Asset {
 	pub name: String,
 	#[serde(with = "url_serde")]
 	pub url: Url,
 }
 
-#[derive(Deserialize)]
+#[derive(serde_derive::Deserialize)]
 pub struct Release {
 	pub tag_name: Version,
 	pub assets: Vec<Asset>,

@@ -3,6 +3,7 @@ use winapi::shared::minwindef::{BOOL, DWORD};
 use winapi::shared::wtypesbase::{LPCOLESTR, LPOLESTR};
 use winapi::um::unknwnbase::{IUnknown, IUnknownVtbl};
 use winapi::um::winnt::{HRESULT, LPCWSTR};
+use winapi::RIDL;
 
 RIDL! {#[uuid(0x0000_010c, 0x0000, 0x0000, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46)]
 interface IPersist(IPersistVtbl): IUnknown(IUnknownVtbl) {

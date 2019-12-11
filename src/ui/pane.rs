@@ -1,5 +1,5 @@
-use super::Column;
-use data_source::DataSource;
+use crate::data_source::DataSource;
+use crate::ui::Column;
 use sciter::dom::event::{BEHAVIOR_EVENTS, CLICK_REASON};
 use sciter::Element;
 use separator::Separatable;
@@ -182,7 +182,7 @@ impl Pane {
 			data_source.active_index = active_index;
 		}
 		self.vtable
-			.call_method("onChange", &make_args!(active_index as i32))
+			.call_method("onChange", &sciter::make_args!(active_index as i32))
 			.unwrap();
 	}
 

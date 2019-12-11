@@ -1,6 +1,6 @@
-use super::{Palette, Pane};
 use crate::data_source::DataSource;
 use crate::self_update::update_self;
+use crate::ui::{Palette, Pane};
 use sciter::dom::event::{EventReason, BEHAVIOR_EVENTS, EVENT_GROUPS, PHASE_MASK};
 use sciter::dom::{ELEMENT_STATE_BITS, HELEMENT};
 use sciter::{Element, EventHandler, Value};
@@ -21,7 +21,7 @@ where
 	Box::new(f) as Callback
 }
 
-#[derive(Deserialize)]
+#[derive(serde_derive::Deserialize)]
 struct KeyBinding {
 	key: String,
 	command: String,
@@ -379,7 +379,7 @@ impl EventHandler for WindowEventHandler {
 	}
 
 	#[allow(clippy::eval_order_dependence)]
-	dispatch_script_call! {
+	sciter::dispatch_script_call! {
 		fn log(String);
 		fn on_key(i32, i32, bool, bool, bool);
 		fn data_source_columns(String);

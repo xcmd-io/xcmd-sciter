@@ -1,24 +1,6 @@
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::eval_order_dependence))]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-#[macro_use]
-extern crate sciter;
-extern crate reqwest;
-extern crate semver;
-extern crate separator;
-extern crate url;
-extern crate xcmd_core;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde;
-extern crate serde_json;
-#[cfg(windows)]
-#[macro_use]
-extern crate winapi;
-extern crate brotli;
-extern crate regex;
-extern crate sha2;
-
 #[cfg(windows)]
 #[macro_use]
 mod com;
@@ -33,7 +15,6 @@ use brotli::BrotliDecompress;
 use sciter::{RuntimeOptions, Window};
 use sha2::{Digest, Sha256};
 use std::env;
-use std::error;
 use std::fmt::Write;
 use std::fs::{self, File};
 use std::io;
