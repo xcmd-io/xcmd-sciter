@@ -33,11 +33,13 @@ use brotli::BrotliDecompress;
 use sciter::{RuntimeOptions, Window};
 use sha2::{Digest, Sha256};
 use std::env;
+use std::error;
 use std::fmt::Write;
 use std::fs::{self, File};
 use std::io;
 use std::path::Path;
 use ui::{WindowEventHandler, WindowSciterHandler};
+use xcmd_core::errors;
 
 macro_rules! lib_path {
 	() => {
@@ -87,8 +89,8 @@ macro_rules! dll_ext {
 	};
 }
 
-fn initialize_sciter_library() {
-	println!("initializing sciter library");
+fn initialize_sciter_library() -> Result<(), errors::AppError> {
+	log::info!("Initializing sciter library.");
 	let library = include_bytes!(concat!(lib_path!(), sciter_dll!(), dll_ext!(), ".br"));
 
 	let mut temp = env::temp_dir();
@@ -98,55 +100,61 @@ fn initialize_sciter_library() {
 		dll_ext!(),
 		".br.sha256"
 	));
-	println!("calculating checksum");
+	log::info!("Calculating checksum.");
 	let mut checksum_string = String::new();
 	for &byte in checksum {
-		write!(&mut checksum_string, "{:x}", byte).unwrap();
+		write!(&mut checksum_string, "{:x}", byte).or(Err("Failed to write checksum."))?;
 	}
 	temp.push(&format!(
 		concat!(sciter_dll!(), "-{}", dll_ext!()),
 		&checksum_string[..16]
 	));
 
-	if temp.exists() && compute_checksum(&temp).as_slice() != checksum {
-		fs::remove_file(&temp).unwrap();
+	if temp.exists() && compute_checksum(&temp)?.as_slice() != checksum {
+		fs::remove_file(&temp)?;
 	}
 
 	if !temp.exists() {
-		println!("decompressing sciter library");
-		let mut file = File::create(&temp).unwrap();
-		BrotliDecompress(&mut library.as_ref(), &mut file).unwrap();
+		log::info!("Decompressing Sciter library.");
+		let mut file = File::create(&temp)?;
+		BrotliDecompress(&mut library.as_ref(), &mut file)?;
 	}
 
-	sciter::set_library(temp.to_str().unwrap()).unwrap();
-	println!("initialized sciter library");
+	sciter::set_library(temp.to_str().ok_or("Failed to set Sciter library.")?)?;
+	log::info!("Initialized sciter library.");
+
+	Ok(())
 }
 
 use sha2::digest::generic_array::typenum::U32;
 use sha2::digest::generic_array::GenericArray;
 
-fn compute_checksum(path: &Path) -> GenericArray<u8, U32> {
+fn compute_checksum(path: &Path) -> Result<GenericArray<u8, U32>, errors::AppError> {
 	let mut sha256 = Sha256::new();
-	let mut input = File::open(&path).unwrap();
-	io::copy(&mut input, &mut sha256).unwrap();
-	sha256.result()
+	let mut input = File::open(&path)?;
+	io::copy(&mut input, &mut sha256)?;
+	Ok(sha256.result())
 }
 
-fn main() {
-	initialize_sciter_library();
+fn main() -> Result<(), errors::AppError> {
+	std::env::set_var("RUST_LOG", "xcmd=info");
+	env_logger::init();
+
+	initialize_sciter_library()?;
 
 	sciter::set_options(RuntimeOptions::ScriptFeatures(
 		sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_SYSINFO as u8 | // Enables Sciter.machineName()
 		sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_FILE_IO as u8 | // Enables opening file dialog (view.selectFile())
 		sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_SOCKET_IO as u8 | // Enables connecting to the inspector via Ctrl+Shift+I
 		sciter::SCRIPT_RUNTIME_FEATURES::ALLOW_EVAL as u8, // Enables eval
-	))
-	.unwrap();
-	sciter::set_options(RuntimeOptions::DebugMode(true)).unwrap();
+	))?;
+	sciter::set_options(RuntimeOptions::DebugMode(true))?;
 	let mut window = Window::new();
 	window.event_handler(WindowEventHandler::new());
 	window.sciter_handler(WindowSciterHandler::new());
 	window.load_file("app://xcmd/shell.sciter.html");
 	window.set_title(&format!("Cross Commander {}", env!("CARGO_PKG_VERSION")));
 	window.run_app();
+
+	Ok(())
 }

@@ -7,3 +7,4 @@ authors = ["xcmd.io <developer@xcmd.io>"]
 sciter-rs = "*"
 ssh2 = { git = "https://github.com/alexcrichton/ssh2-rs" }
 owning_ref = "*"
+derive_more = "0.99.2"

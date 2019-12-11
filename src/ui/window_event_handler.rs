@@ -502,7 +502,8 @@ fn copy_file(state: &mut WindowState, root: &Element) {
 	if let Some(pane) = state.get_active_pane() {
 		if let Some(path) = pane.get_active_path() {
 			// root.eval_script("view.dialog({ url: \"app://xcmd/copy.sciter.html\", width: this.toPixels(100dip), height: this.toPixels(100dip) })").unwrap();
-			root.eval_script("view.dialog(\"app://xcmd/copy.sciter.html\")").unwrap();
+			root.eval_script("view.dialog(\"app://xcmd/copy.sciter.html\")")
+				.unwrap();
 		}
 	}
 }

@@ -14,8 +14,7 @@ impl LocalSystem {
 		field_names: &Rc<Vec<String>>,
 	) -> Result<File, Error> {
 		let path = Path::new(path);
-		let full_path =
-			trim_long_path_prefix(&path.to_string_lossy().into_owned()).to_owned();
+		let full_path = trim_long_path_prefix(&path.to_string_lossy().into_owned()).to_owned();
 		let metadata = path.metadata();
 		let mut size = 0;
 		let mut is_dir = false;
@@ -58,14 +57,12 @@ impl LocalSystem {
 
 impl System for LocalSystem {
 	fn get_root(&mut self, field_names: &Rc<Vec<String>>) -> Result<File, Error> {
-		let root = fs::canonicalize(".")
-			.unwrap_or_else(|_err| PathBuf::from("."));
+		let root = fs::canonicalize(".").unwrap_or_else(|_err| PathBuf::from("."));
 		self.get_local_file(&root, None, field_names)
 	}
 
 	fn get_file(&mut self, path: &str, field_names: &Rc<Vec<String>>) -> Result<File, Error> {
-		let path = fs::canonicalize(path)
-			.unwrap_or_else(|_err| PathBuf::from(path));
+		let path = fs::canonicalize(path).unwrap_or_else(|_err| PathBuf::from(path));
 		self.get_local_file(&path, None, field_names)
 	}
 

@@ -19,6 +19,8 @@ regex = "*"
 toml = "*"
 brotli = "*"
 sha2 = "*"
+log = "*"
+env_logger = "*"
 
 [build-dependencies]
 brotli = "*"
