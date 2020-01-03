@@ -99,7 +99,7 @@ impl System for LocalSystem {
 							)?);
 						}
 					}
-					Err(e) => println!("Failed to read children: {}", e),
+					Err(e) => log::error!("Failed to read children: {}", e),
 				}
 			}
 		}

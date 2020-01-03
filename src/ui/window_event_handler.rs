@@ -284,7 +284,7 @@ impl WindowEventHandler {
 	}
 
 	fn log(&mut self, message: String) {
-		println!("log: {}", message);
+		log::info!("log: {}", message);
 	}
 
 	fn on_key(
@@ -295,9 +295,13 @@ impl WindowEventHandler {
 		ctrl_key: bool,
 		shift_key: bool,
 	) -> bool {
-		println!(
+		log::debug!(
 			"on_key: type={}, keyCode={}, alt={}, ctrl={}, shift={}",
-			event_type, key_code, alt_key, ctrl_key, shift_key
+			event_type,
+			key_code,
+			alt_key,
+			ctrl_key,
+			shift_key
 		);
 		if event_type == BEHAVIOR_EVENTS::BUTTON_CLICK as i32 {
 			if let Some(key_index) = self.key_map.get(&key_code) {
@@ -401,7 +405,7 @@ impl EventHandler for WindowEventHandler {
 			return false;
 		}
 
-		// println!("code={:?}, reason={:?}", code, reason);
+		// log::debug!("code={:?}, reason={:?}", code, reason);
 
 		if code == BEHAVIOR_EVENTS::DOCUMENT_READY {
 			self.on_document_ready(root);

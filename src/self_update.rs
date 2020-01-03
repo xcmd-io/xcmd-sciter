@@ -45,39 +45,39 @@ fn update_link(link: &Path, target: &Path) {
 }
 
 pub fn update_self(_state: &mut WindowState, root: &Element) {
-	println!("self_update");
+	log::info!("self_update");
 	let pkg_name = env!("CARGO_PKG_NAME");
-	println!("pkg_name={}", &pkg_name);
+	log::info!("pkg_name={}", &pkg_name);
 	let pkg_version = Version::parse(env!("CARGO_PKG_VERSION")).expect("current version");
-	println!("pkg_version={}", &pkg_version);
+	log::info!("pkg_version={}", &pkg_version);
 	let exe_path = std::env::current_exe().expect("current exe");
-	println!("exe_path={:?}", &exe_path);
+	log::info!("exe_path={:?}", &exe_path);
 	let hwnd = root.get_hwnd(true);
 	// let current_exe = read_link(&exe_path, hwnd);
 	let current_exe = exe_path;
-	println!("current_exe={:?}", &current_exe);
+	log::info!("current_exe={:?}", &current_exe);
 	let current_dir = current_exe.parent().expect("current dir");
-	println!("current_dir={:?}", &current_dir);
+	log::info!("current_dir={:?}", &current_dir);
 	let current_dirname = current_dir.file_name().expect("current dir name");
-	println!("current_dirname={:?}", &current_dirname);
+	log::info!("current_dirname={:?}", &current_dirname);
 	let current_version =
 		Version::parse(&current_dirname.to_string_lossy()).expect("current dir version");
-	println!("current_version={:?}", &current_version);
+	log::info!("current_version={:?}", &current_version);
 	let launcher_dir = current_dir.parent().expect("launcher dir");
-	println!("launcher_dir={:?}", &launcher_dir);
+	log::info!("launcher_dir={:?}", &launcher_dir);
 	let launcher_exe = launcher_dir.join(win_append_extension(pkg_name, ".lnk"));
-	println!("launcher_exe={:?}", &launcher_exe);
+	log::info!("launcher_exe={:?}", &launcher_exe);
 	update_link(&launcher_exe, &current_exe);
-	println!("link updated");
+	log::info!("link updated");
 	if current_version == pkg_version && read_link(&launcher_exe, hwnd) == current_exe {
 		let latest_release_url =
 			Url::parse("https://api.github.com/repos/xcmd-io/xcmd/releases/latest")
 				.expect("latest release url");
-		println!("latest_release_url={:?}", &latest_release_url);
+		log::info!("latest_release_url={:?}", &latest_release_url);
 		let latest_release = repository::get_latest_release(&latest_release_url);
 		if latest_release.tag_name > pkg_version {
 			let latest_dir = launcher_dir.join(latest_release.tag_name.to_string());
-			println!("latest_dir={:?}", &latest_dir);
+			log::info!("latest_dir={:?}", &latest_dir);
 			fs::create_dir(&latest_dir)
 				.or_else(|e| {
 					if e.kind() == ErrorKind::AlreadyExists {

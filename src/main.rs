@@ -101,6 +101,8 @@ fn initialize_sciter_library() -> Result<(), errors::AppError> {
 		BrotliDecompress(&mut library.as_ref(), &mut file)?;
 	}
 
+	log::info!("Sciter library location: {:?}", temp);
+
 	sciter::set_library(temp.to_str().ok_or("Failed to set Sciter library.")?)?;
 	log::info!("Initialized sciter library.");
 

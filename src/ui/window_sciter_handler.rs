@@ -14,7 +14,7 @@ impl WindowSciterHandler {
 impl HostHandler for WindowSciterHandler {
 	fn on_data_load(&mut self, data: &mut SCN_LOAD_DATA) -> Option<LOAD_RESULT> {
 		let requested_uri = sciter::w2s!(data.uri);
-		eprintln!("Loading: {:?}", &requested_uri);
+		log::info!("Loading: {:?}", &requested_uri);
 		if requested_uri.starts_with("app://") {
 			let requested_path = &requested_uri["app://".len()..];
 			for (path, bytes) in APP_DATA {

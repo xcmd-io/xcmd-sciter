@@ -31,7 +31,7 @@ impl Pane {
 		field_names.push("attributes".to_owned());
 		let root = &system.get_root(&Rc::new(field_names.clone())).unwrap();
 		let parent_path = get_path(&root);
-		println!("parent_path={}", parent_path);
+		log::info!("parent_path={}", parent_path);
 		let mut pane = Pane {
 			active,
 			system,
@@ -81,9 +81,9 @@ impl Pane {
 				}
 				self.set_active_item(active_index.unwrap_or(0) as u32);
 			}
-			Err(e) => println!("Error: {}", e),
+			Err(e) => log::error!("Error: {}", e),
 		}
-		println!("{:?}", now.elapsed());
+		log::info!("{:?}", now.elapsed());
 		self.vtable
 			.send_event(
 				BEHAVIOR_EVENTS::CHANGE,
@@ -205,9 +205,9 @@ impl Pane {
 
 	pub fn list_files(&mut self) -> Result<Vec<File>, Error> {
 		let field_names = Rc::new((&self.field_names).clone());
-		println!("parent={}", self.parent);
+		log::info!("parent={}", self.parent);
 		let parent = self.system.get_file(&self.parent, &field_names)?;
-		println!("list files");
+		log::info!("list files");
 		self.system.list_files(&parent, &field_names)
 	}
 }

@@ -121,7 +121,7 @@ impl System for SftpSystem {
 						field_names,
 					)?);
 				}
-				println!("SFTP readdir: {:?}", path);
+				log::info!("SFTP readdir: {:?}", path);
 				match self.sftp.readdir(&path) {
 					Ok(read_dir) => {
 						for (child_path, stat) in read_dir {
@@ -133,7 +133,7 @@ impl System for SftpSystem {
 							)?);
 						}
 					}
-					Err(e) => println!("Failed to read children: {}", e),
+					Err(e) => log::error!("Failed to read children: {}", e),
 				}
 			}
 		}

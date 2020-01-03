@@ -79,7 +79,7 @@ fn prepare_sciter_app_files() -> Result<(), Box<dyn Error>> {
 		Ok(())
 	})?;
 
-	writeln!(&mut output, r#"];"#,)?;
+	writeln!(&mut output, r#"]"#,)?;
 
 	Ok(())
 }

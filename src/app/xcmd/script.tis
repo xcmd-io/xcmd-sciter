@@ -210,6 +210,5 @@ class DataSource {
 }
 
 view.root.onKey = function(evt) {
-	view.log("keydown");
 	return view.on_key(evt.type, evt.keyCode, evt.altKey, evt.ctrlKey, evt.shiftKey);
 };

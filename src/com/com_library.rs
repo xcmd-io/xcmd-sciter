@@ -6,7 +6,6 @@ pub struct ComLibrary;
 
 impl ComLibrary {
 	pub fn initialize() -> Result<ComLibrary, i32> {
-		println!("CoInitialize");
 		let hr = unsafe { CoInitialize(ptr::null_mut()) };
 		if hr < 0 {
 			unsafe { CoUninitialize() };
@@ -18,7 +17,6 @@ impl ComLibrary {
 
 impl Drop for ComLibrary {
 	fn drop(&mut self) {
-		println!("CoUninitialize");
 		unsafe {
 			CoUninitialize();
 		}
